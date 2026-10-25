@@ -11,9 +11,8 @@ Teks narasi dapat dibacakan langsung. Bagian *arahan visual* dan *catatan akuras
 
 Selamat pagi/siang, teman-teman. Perkenalkan, saya Rayina Ilham, IT Operation Intern di AnterAja.
 
-Hari ini saya akan membahas bagaimana beberapa layanan AWS dapat bekerja bersama untuk memproses pesanan. Pembahasan ini mengacu pada materi AWS Skill Builder, dengan contoh sebuah startup kendaraan listrik.
+Hari ini saya akan membahas materi AWS Skill Builder, dengan contoh sebuah startup kendaraan listrik.
 
-Kita mulai dari kebutuhan bisnisnya, lalu melihat cara membagi pekerjaan, mengatur langkah pesanan, dan membagikan kabar ke layanan lain.
 
 ## Slide 1 — Designing a Serverless Architecture with Event-Driven Microservices
 
