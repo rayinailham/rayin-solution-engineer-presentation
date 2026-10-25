@@ -38,3 +38,5 @@ Thumbs.db
 .aws/
 .codex/
 PROMPT-NEXT-SESSION.md
+.vercel
+.env*
