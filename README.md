@@ -45,8 +45,8 @@ An interactive, production-grade web keynote presentation illustrating the trans
 
 ### Installation
 ```bash
-git clone https://github.com/rayinailham/aws-serverless-eda-presentation.git
-cd aws-serverless-eda-presentation
+git clone git@rayin-personal:rayinailham/rayin-solution-engineer-presentation.git
+cd rayin-solution-engineer-presentation
 npm install
 ```
 
