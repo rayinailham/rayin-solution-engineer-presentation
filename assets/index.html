@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS Presentation Assets & Icon Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: rgba(22, 27, 34, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(33, 38, 45, 0.95);
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --accent: #ff9900;
+      --accent-glow: rgba(255, 153, 0, 0.25);
+      --blue: #38bdf8;
+      --green: #3fb950;
+      --purple: #a855f7;
+      --tile-bg: rgba(13, 17, 23, 0.85);
+      --tile-border: rgba(255, 255, 255, 0.06);
+    }
+
+    body.light-mode {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --card-hover: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ea580c;
+      --accent-glow: rgba(234, 88, 12, 0.2);
+      --tile-bg: #f1f5f9;
+      --tile-border: rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 80px;
+    }
+
+    header {
+      background: linear-gradient(180deg, rgba(255, 153, 0, 0.1) 0%, transparent 100%);
+      border-bottom: 1px solid var(--card-border);
+      padding: 48px 32px 36px;
+      margin-bottom: 40px;
+      backdrop-filter: blur(12px);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .title-group h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .title-group h1 span.aws-badge {
+      background: var(--accent);
+      color: #000;
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .title-group p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-top: 8px;
+      max-width: 780px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text);
+    }
+
+    .btn:hover {
+      background: var(--card-hover);
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #e68a00;
+      color: #000;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 260px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .quick-decks {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .quick-decks-text h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .quick-decks-text p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .deck-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .category-section {
+      margin-bottom: 48px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .category-header h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .category-header .badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 153, 0, 0.15);
+      color: var(--accent);
+    }
+
+    .category-header p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      flex: 1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .asset-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+    }
+
+    .asset-card:hover {
+      border-color: rgba(255, 153, 0, 0.4);
+      background: var(--card-hover);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .preview-box {
+      height: 120px;
+      background: var(--tile-bg);
+      border: 1px solid var(--tile-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-box img {
+      max-height: 84px;
+      max-width: 84px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+    }
+
+    .asset-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .asset-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .action-btn {
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .action-btn:hover {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .copy-chip {
+      grid-column: span 2;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.25);
+      border: 1px dashed var(--card-border);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .copy-chip:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #3fb950;
+      color: #000;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      display: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container header-content">
+      <div class="title-group">
+        <h1>
+          <span class="aws-badge">AWS</span>
+          Presentation Assets & Architecture Icons
+        </h1>
+        <p>Koleksi aset visual resmi AWS untuk materi <strong>Designing a Serverless Architecture with Event-Driven Microservices</strong>. Tersedia format SVG lossless vector, high-res PNG (512px & 320px), serta slide deck PPTX resmi siap pakai.</p>
+      </div>
+      <div class="controls">
+        <button class="btn" id="theme-toggle" onclick="toggleTheme()">🌓 Switch Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- PPTX Toolkits Banner -->
+    <div class="quick-decks">
+      <div class="quick-decks-text">
+        <h3>📊 Official AWS PPTX Presentation Toolkits Ready!</h3>
+        <p>Template presentasi resmi AWS berisi seluruh shape arsitektur, konektor, icon grup, dan pedoman diagram siap copy-paste.</p>
+      </div>
+      <div class="deck-buttons">
+        <a class="btn btn-primary" href="07-presentation-decks/AWS-Architecture-Icons-Deck_For-Dark-BG.pptx" download>
+          📥 Dark BG Deck (.pptx)
+        </a>
+        <a class="btn" href="07-presentation-decks/AWS-Architecture-Icons-Deck_For-Light-BG.pptx" download>
+          📥 Light BG Deck (.pptx)
+        </a>
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="filter-bar">
+      <input type="text" id="search" class="search-input" placeholder="🔍 Cari icon service (contoh: Lambda, EventBridge, SQS, DynamoDB, Cognito...)" oninput="filterAssets()">
+    </div>
+
+    <!-- Dynamic Categories -->
+
+    <section class="category-section" id="logos">
+      <div class="category-header">
+        <h2>AWS Core Brand & Cloud Logos</h2>
+        <span class="badge">Brand Assets</span>
+        <p>Official Amazon Web Services smile logos (dark & white) and AWS Cloud box logos in SVG & high-res PNG.</p>
+      </div>
+      <div class="grid">
+    
+        <div class="asset-card" data-name="aws cloud logo box">
+          <div class="preview-box">
+            <img src="01-aws-core-logos/aws-cloud-logo-box.svg" alt="Aws Cloud Logo Box" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Cloud Logo Box">Aws Cloud Logo Box</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="01-aws-core-logos/aws-cloud-logo-box.svg" download>SVG</a>
+            <a class="action-btn" href="01-aws-core-logos/aws-cloud-logo-box.png" download>PNG</a>
+            <div class="copy-chip" onclick="copyText('assets/01-aws-core-logos/aws-cloud-logo-box.svg')" title="Klik untuk copy relative path">
+              <span>assets/aws-cloud-logo-box.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws cloud logo box dark">
+          <div class="preview-box">
+            <img src="01-aws-core-logos/aws-cloud-logo-box-dark.svg" alt="Aws Cloud Logo Box Dark" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Cloud Logo Box Dark">Aws Cloud Logo Box Dark</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="01-aws-core-logos/aws-cloud-logo-box-dark.svg" download>SVG</a>
+            <a class="action-btn" href="01-aws-core-logos/aws-cloud-logo-box-dark.png" download>PNG</a>
+            <div class="copy-chip" onclick="copyText('assets/01-aws-core-logos/aws-cloud-logo-box-dark.svg')" title="Klik untuk copy relative path">
+              <span>assets/aws-cloud-logo-box-dark.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws logo">
+          <div class="preview-box">
+            <img src="01-aws-core-logos/aws-logo.svg" alt="Aws Logo" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Logo">Aws Logo</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="01-aws-core-logos/aws-logo.svg" download>SVG</a>
+            <a class="action-btn" href="01-aws-core-logos/aws-logo.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/01-aws-core-logos/aws-logo.svg')" title="Klik untuk copy relative path">
+              <span>assets/aws-logo.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws logo white">
+          <div class="preview-box">
+            <img src="01-aws-core-logos/aws-logo-white.svg" alt="Aws Logo White" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Logo White">Aws Logo White</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="01-aws-core-logos/aws-logo-white.svg" download>SVG</a>
+            <a class="action-btn" href="01-aws-core-logos/aws-logo-white.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/01-aws-core-logos/aws-logo-white.svg')" title="Klik untuk copy relative path">
+              <span>assets/aws-logo-white.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <section class="category-section" id="categories">
+      <div class="category-header">
+        <h2>AWS Architectural Categories</h2>
+        <span class="badge">Domains</span>
+        <p>Category icons representing core AWS domains (Serverless, Compute, Integration, Databases, Security, etc.).</p>
+      </div>
+      <div class="grid">
+    
+        <div class="asset-card" data-name="category analytics">
+          <div class="preview-box">
+            <img src="02-categories/category-analytics.svg" alt="Category Analytics" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Analytics">Category Analytics</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-analytics.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-analytics-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-analytics.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-analytics.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category application integration">
+          <div class="preview-box">
+            <img src="02-categories/category-application-integration.svg" alt="Category Application Integration" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Application Integration">Category Application Integration</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-application-integration.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-application-integration-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-application-integration.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-application-integration.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category compute">
+          <div class="preview-box">
+            <img src="02-categories/category-compute.svg" alt="Category Compute" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Compute">Category Compute</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-compute.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-compute-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-compute.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-compute.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category containers">
+          <div class="preview-box">
+            <img src="02-categories/category-containers.svg" alt="Category Containers" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Containers">Category Containers</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-containers.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-containers-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-containers.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-containers.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category databases">
+          <div class="preview-box">
+            <img src="02-categories/category-databases.svg" alt="Category Databases" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Databases">Category Databases</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-databases.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-databases-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-databases.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-databases.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category management governance">
+          <div class="preview-box">
+            <img src="02-categories/category-management-governance.svg" alt="Category Management Governance" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Management Governance">Category Management Governance</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-management-governance.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-management-governance-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-management-governance.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-management-governance.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category networking content delivery">
+          <div class="preview-box">
+            <img src="02-categories/category-networking-content-delivery.svg" alt="Category Networking Content Delivery" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Networking Content Delivery">Category Networking Content Delivery</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-networking-content-delivery.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-networking-content-delivery-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-networking-content-delivery.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-networking-content-delivery.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category security identity">
+          <div class="preview-box">
+            <img src="02-categories/category-security-identity.svg" alt="Category Security Identity" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Security Identity">Category Security Identity</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-security-identity.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-security-identity-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-security-identity.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-security-identity.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category serverless">
+          <div class="preview-box">
+            <img src="02-categories/category-serverless.svg" alt="Category Serverless" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Serverless">Category Serverless</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-serverless.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-serverless-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-serverless.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-serverless.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="category storage">
+          <div class="preview-box">
+            <img src="02-categories/category-storage.svg" alt="Category Storage" loading="lazy">
+          </div>
+          <div class="asset-title" title="Category Storage">Category Storage</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="02-categories/category-storage.svg" download>SVG</a>
+            <a class="action-btn" href="02-categories/category-storage-highres.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/02-categories/category-storage.svg')" title="Klik untuk copy relative path">
+              <span>assets/category-storage.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <section class="category-section" id="core-services">
+      <div class="category-header">
+        <h2>Core Services (EDA & Serverless Modules)</h2>
+        <span class="badge">Primary Services</span>
+        <p>Primary services featured across the 15 modules (EventBridge, Lambda, API Gateway, SQS, SNS, Step Functions, Cognito, S3, DynamoDB, CloudWatch, X-Ray, etc.).</p>
+      </div>
+      <div class="grid">
+    
+        <div class="asset-card" data-name="amazon eventbridge">
+          <div class="preview-box">
+            <img src="03-core-services/01-amazon-eventbridge/Amazon-EventBridge.svg" alt="Amazon Eventbridge" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Eventbridge">Amazon Eventbridge</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/01-amazon-eventbridge/Amazon-EventBridge.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/01-amazon-eventbridge/Amazon-EventBridge-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/01-amazon-eventbridge/Amazon-EventBridge.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-EventBridge.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws lambda">
+          <div class="preview-box">
+            <img src="03-core-services/02-aws-lambda/AWS-Lambda.svg" alt="Aws Lambda" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Lambda">Aws Lambda</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/02-aws-lambda/AWS-Lambda.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/02-aws-lambda/AWS-Lambda-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/02-aws-lambda/AWS-Lambda.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-Lambda.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon api gateway">
+          <div class="preview-box">
+            <img src="03-core-services/03-amazon-api-gateway/Amazon-API-Gateway.svg" alt="Amazon Api Gateway" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Api Gateway">Amazon Api Gateway</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/03-amazon-api-gateway/Amazon-API-Gateway.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/03-amazon-api-gateway/Amazon-API-Gateway-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/03-amazon-api-gateway/Amazon-API-Gateway.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-API-Gateway.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon sqs">
+          <div class="preview-box">
+            <img src="03-core-services/04-amazon-sqs/Amazon-SQS.svg" alt="Amazon Sqs" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Sqs">Amazon Sqs</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/04-amazon-sqs/Amazon-SQS.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/04-amazon-sqs/Amazon-SQS-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/04-amazon-sqs/Amazon-SQS.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-SQS.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon sns">
+          <div class="preview-box">
+            <img src="03-core-services/05-amazon-sns/Amazon-SNS.svg" alt="Amazon Sns" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Sns">Amazon Sns</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/05-amazon-sns/Amazon-SNS.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/05-amazon-sns/Amazon-SNS-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/05-amazon-sns/Amazon-SNS.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-SNS.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws step functions">
+          <div class="preview-box">
+            <img src="03-core-services/06-aws-step-functions/AWS-Step-Functions.svg" alt="Aws Step Functions" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Step Functions">Aws Step Functions</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/06-aws-step-functions/AWS-Step-Functions.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/06-aws-step-functions/AWS-Step-Functions-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/06-aws-step-functions/AWS-Step-Functions.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-Step-Functions.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon cognito">
+          <div class="preview-box">
+            <img src="03-core-services/07-amazon-cognito/Amazon-Cognito.svg" alt="Amazon Cognito" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Cognito">Amazon Cognito</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/07-amazon-cognito/Amazon-Cognito.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/07-amazon-cognito/Amazon-Cognito-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/07-amazon-cognito/Amazon-Cognito.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-Cognito.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws iam">
+          <div class="preview-box">
+            <img src="03-core-services/08-aws-iam/AWS-IAM.svg" alt="Aws Iam" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Iam">Aws Iam</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/08-aws-iam/AWS-IAM.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/08-aws-iam/AWS-IAM-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/08-aws-iam/AWS-IAM.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-IAM.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon s3">
+          <div class="preview-box">
+            <img src="03-core-services/09-amazon-s3/Amazon-S3.svg" alt="Amazon S3" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon S3">Amazon S3</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/09-amazon-s3/Amazon-S3.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/09-amazon-s3/Amazon-S3-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/09-amazon-s3/Amazon-S3.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-S3.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon dynamodb">
+          <div class="preview-box">
+            <img src="03-core-services/10-amazon-dynamodb/Amazon-DynamoDB.svg" alt="Amazon Dynamodb" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Dynamodb">Amazon Dynamodb</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/10-amazon-dynamodb/Amazon-DynamoDB.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/10-amazon-dynamodb/Amazon-DynamoDB-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/10-amazon-dynamodb/Amazon-DynamoDB.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-DynamoDB.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon cloudwatch">
+          <div class="preview-box">
+            <img src="03-core-services/11-amazon-cloudwatch/Amazon-CloudWatch.svg" alt="Amazon Cloudwatch" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Cloudwatch">Amazon Cloudwatch</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/11-amazon-cloudwatch/Amazon-CloudWatch.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/11-amazon-cloudwatch/Amazon-CloudWatch-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/11-amazon-cloudwatch/Amazon-CloudWatch.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-CloudWatch.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws xray">
+          <div class="preview-box">
+            <img src="03-core-services/12-aws-xray/AWS-X-Ray.svg" alt="Aws Xray" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Xray">Aws Xray</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/12-aws-xray/AWS-X-Ray.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/12-aws-xray/AWS-X-Ray-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/12-aws-xray/AWS-X-Ray.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-X-Ray.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws kms">
+          <div class="preview-box">
+            <img src="03-core-services/13-aws-kms/AWS-KMS.svg" alt="Aws Kms" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Kms">Aws Kms</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/13-aws-kms/AWS-KMS.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/13-aws-kms/AWS-KMS-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/13-aws-kms/AWS-KMS.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-KMS.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws secrets manager">
+          <div class="preview-box">
+            <img src="03-core-services/14-aws-secrets-manager/AWS-Secrets-Manager.svg" alt="Aws Secrets Manager" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Secrets Manager">Aws Secrets Manager</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/14-aws-secrets-manager/AWS-Secrets-Manager.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/14-aws-secrets-manager/AWS-Secrets-Manager-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/14-aws-secrets-manager/AWS-Secrets-Manager.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-Secrets-Manager.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws cloudtrail">
+          <div class="preview-box">
+            <img src="03-core-services/15-aws-cloudtrail/AWS-CloudTrail.svg" alt="Aws Cloudtrail" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Cloudtrail">Aws Cloudtrail</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/15-aws-cloudtrail/AWS-CloudTrail.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/15-aws-cloudtrail/AWS-CloudTrail-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/15-aws-cloudtrail/AWS-CloudTrail.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-CloudTrail.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws config">
+          <div class="preview-box">
+            <img src="03-core-services/16-aws-config/AWS-Config.svg" alt="Aws Config" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Config">Aws Config</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="03-core-services/16-aws-config/AWS-Config.svg" download>SVG</a>
+            <a class="action-btn" href="03-core-services/16-aws-config/AWS-Config-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/03-core-services/16-aws-config/AWS-Config.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-Config.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <section class="category-section" id="compute-comparison">
+      <div class="category-header">
+        <h2>Compute & Containers (Module 06 TechTalk)</h2>
+        <span class="badge">Architecture Comparison</span>
+        <p>EC2, ECS, EKS, ECR, and Fargate for architectural trade-off slides.</p>
+      </div>
+      <div class="grid">
+    
+        <div class="asset-card" data-name="amazon ec2">
+          <div class="preview-box">
+            <img src="04-compute-and-container-comparison/01-amazon-ec2/Amazon-EC2.svg" alt="Amazon Ec2" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Ec2">Amazon Ec2</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="04-compute-and-container-comparison/01-amazon-ec2/Amazon-EC2.svg" download>SVG</a>
+            <a class="action-btn" href="04-compute-and-container-comparison/01-amazon-ec2/Amazon-EC2-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/04-compute-and-container-comparison/01-amazon-ec2/Amazon-EC2.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-EC2.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon ecs">
+          <div class="preview-box">
+            <img src="04-compute-and-container-comparison/02-amazon-ecs/Amazon-ECS.svg" alt="Amazon Ecs" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Ecs">Amazon Ecs</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="04-compute-and-container-comparison/02-amazon-ecs/Amazon-ECS.svg" download>SVG</a>
+            <a class="action-btn" href="04-compute-and-container-comparison/02-amazon-ecs/Amazon-ECS-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/04-compute-and-container-comparison/02-amazon-ecs/Amazon-ECS.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-ECS.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon eks">
+          <div class="preview-box">
+            <img src="04-compute-and-container-comparison/03-amazon-eks/Amazon-EKS.svg" alt="Amazon Eks" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Eks">Amazon Eks</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="04-compute-and-container-comparison/03-amazon-eks/Amazon-EKS.svg" download>SVG</a>
+            <a class="action-btn" href="04-compute-and-container-comparison/03-amazon-eks/Amazon-EKS-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/04-compute-and-container-comparison/03-amazon-eks/Amazon-EKS.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-EKS.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon ecr">
+          <div class="preview-box">
+            <img src="04-compute-and-container-comparison/04-amazon-ecr/Amazon-ECR.svg" alt="Amazon Ecr" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Ecr">Amazon Ecr</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="04-compute-and-container-comparison/04-amazon-ecr/Amazon-ECR.svg" download>SVG</a>
+            <a class="action-btn" href="04-compute-and-container-comparison/04-amazon-ecr/Amazon-ECR-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/04-compute-and-container-comparison/04-amazon-ecr/Amazon-ECR.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-ECR.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws fargate">
+          <div class="preview-box">
+            <img src="04-compute-and-container-comparison/05-aws-fargate/AWS-Fargate.svg" alt="Aws Fargate" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Fargate">Aws Fargate</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="04-compute-and-container-comparison/05-aws-fargate/AWS-Fargate.svg" download>SVG</a>
+            <a class="action-btn" href="04-compute-and-container-comparison/05-aws-fargate/AWS-Fargate-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/04-compute-and-container-comparison/05-aws-fargate/AWS-Fargate.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-Fargate.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <section class="category-section" id="network-security">
+      <div class="category-header">
+        <h2>Networking & Security Services</h2>
+        <span class="badge">Security & Infra</span>
+        <p>VPC, PrivateLink Endpoints, NAT Gateway, Internet Gateway, WAF, and Shield.</p>
+      </div>
+      <div class="grid">
+    
+        <div class="asset-card" data-name="amazon vpc">
+          <div class="preview-box">
+            <img src="05-network-and-security/01-amazon-vpc/Amazon-VPC.svg" alt="Amazon Vpc" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Vpc">Amazon Vpc</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="05-network-and-security/01-amazon-vpc/Amazon-VPC.svg" download>SVG</a>
+            <a class="action-btn" href="05-network-and-security/01-amazon-vpc/Amazon-VPC-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/05-network-and-security/01-amazon-vpc/Amazon-VPC.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-VPC.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="vpc nat gateway">
+          <div class="preview-box">
+            <img src="05-network-and-security/02-vpc-nat-gateway/VPC-NAT-Gateway.svg" alt="Vpc Nat Gateway" loading="lazy">
+          </div>
+          <div class="asset-title" title="Vpc Nat Gateway">Vpc Nat Gateway</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="05-network-and-security/02-vpc-nat-gateway/VPC-NAT-Gateway.svg" download>SVG</a>
+            <a class="action-btn" href="05-network-and-security/02-vpc-nat-gateway/VPC-NAT-Gateway-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/05-network-and-security/02-vpc-nat-gateway/VPC-NAT-Gateway.svg')" title="Klik untuk copy relative path">
+              <span>assets/VPC-NAT-Gateway.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="vpc endpoints privatelink">
+          <div class="preview-box">
+            <img src="05-network-and-security/03-vpc-endpoints-privatelink/VPC-Endpoints-PrivateLink.svg" alt="Vpc Endpoints Privatelink" loading="lazy">
+          </div>
+          <div class="asset-title" title="Vpc Endpoints Privatelink">Vpc Endpoints Privatelink</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="05-network-and-security/03-vpc-endpoints-privatelink/VPC-Endpoints-PrivateLink.svg" download>SVG</a>
+            <a class="action-btn" href="05-network-and-security/03-vpc-endpoints-privatelink/VPC-Endpoints-PrivateLink-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/05-network-and-security/03-vpc-endpoints-privatelink/VPC-Endpoints-PrivateLink.svg')" title="Klik untuk copy relative path">
+              <span>assets/VPC-Endpoints-PrivateLink.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="vpc internet gateway">
+          <div class="preview-box">
+            <img src="05-network-and-security/04-vpc-internet-gateway/VPC-Internet-Gateway.svg" alt="Vpc Internet Gateway" loading="lazy">
+          </div>
+          <div class="asset-title" title="Vpc Internet Gateway">Vpc Internet Gateway</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="05-network-and-security/04-vpc-internet-gateway/VPC-Internet-Gateway.svg" download>SVG</a>
+            <a class="action-btn" href="05-network-and-security/04-vpc-internet-gateway/VPC-Internet-Gateway-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/05-network-and-security/04-vpc-internet-gateway/VPC-Internet-Gateway.svg')" title="Klik untuk copy relative path">
+              <span>assets/VPC-Internet-Gateway.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws waf">
+          <div class="preview-box">
+            <img src="05-network-and-security/05-aws-waf/AWS-WAF.svg" alt="Aws Waf" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Waf">Aws Waf</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="05-network-and-security/05-aws-waf/AWS-WAF.svg" download>SVG</a>
+            <a class="action-btn" href="05-network-and-security/05-aws-waf/AWS-WAF-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/05-network-and-security/05-aws-waf/AWS-WAF.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-WAF.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="aws shield">
+          <div class="preview-box">
+            <img src="05-network-and-security/06-aws-shield/AWS-Shield.svg" alt="Aws Shield" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Shield">Aws Shield</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="05-network-and-security/06-aws-shield/AWS-Shield.svg" download>SVG</a>
+            <a class="action-btn" href="05-network-and-security/06-aws-shield/AWS-Shield-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/05-network-and-security/06-aws-shield/AWS-Shield.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-Shield.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <section class="category-section" id="supporting">
+      <div class="category-header">
+        <h2>Analytics & Supporting Event Services</h2>
+        <span class="badge">Ecosystem</span>
+        <p>Kinesis Data Streams, DynamoDB Streams, EventBridge Pipes, Athena, OpenSearch, RDS.</p>
+      </div>
+      <div class="grid">
+    
+        <div class="asset-card" data-name="amazon kinesis data streams">
+          <div class="preview-box">
+            <img src="08-analytics-and-supporting-services/01-amazon-kinesis-data-streams/Amazon-Kinesis-Data-Streams.svg" alt="Amazon Kinesis Data Streams" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Kinesis Data Streams">Amazon Kinesis Data Streams</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="08-analytics-and-supporting-services/01-amazon-kinesis-data-streams/Amazon-Kinesis-Data-Streams.svg" download>SVG</a>
+            <a class="action-btn" href="08-analytics-and-supporting-services/01-amazon-kinesis-data-streams/Amazon-Kinesis-Data-Streams-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/08-analytics-and-supporting-services/01-amazon-kinesis-data-streams/Amazon-Kinesis-Data-Streams.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-Kinesis-Data-Streams.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon dynamodb streams">
+          <div class="preview-box">
+            <img src="08-analytics-and-supporting-services/02-amazon-dynamodb-streams/Amazon-DynamoDB-Streams.svg" alt="Amazon Dynamodb Streams" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Dynamodb Streams">Amazon Dynamodb Streams</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="08-analytics-and-supporting-services/02-amazon-dynamodb-streams/Amazon-DynamoDB-Streams.svg" download>SVG</a>
+            <a class="action-btn" href="08-analytics-and-supporting-services/02-amazon-dynamodb-streams/Amazon-DynamoDB-Streams-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/08-analytics-and-supporting-services/02-amazon-dynamodb-streams/Amazon-DynamoDB-Streams.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-DynamoDB-Streams.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon eventbridge pipes">
+          <div class="preview-box">
+            <img src="08-analytics-and-supporting-services/03-amazon-eventbridge-pipes/Amazon-EventBridge-Pipes.svg" alt="Amazon Eventbridge Pipes" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Eventbridge Pipes">Amazon Eventbridge Pipes</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="08-analytics-and-supporting-services/03-amazon-eventbridge-pipes/Amazon-EventBridge-Pipes.svg" download>SVG</a>
+            <a class="action-btn" href="08-analytics-and-supporting-services/03-amazon-eventbridge-pipes/Amazon-EventBridge-Pipes-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/08-analytics-and-supporting-services/03-amazon-eventbridge-pipes/Amazon-EventBridge-Pipes.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-EventBridge-Pipes.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon athena">
+          <div class="preview-box">
+            <img src="08-analytics-and-supporting-services/04-amazon-athena/Amazon-Athena.svg" alt="Amazon Athena" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Athena">Amazon Athena</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="08-analytics-and-supporting-services/04-amazon-athena/Amazon-Athena.svg" download>SVG</a>
+            <a class="action-btn" href="08-analytics-and-supporting-services/04-amazon-athena/Amazon-Athena-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/08-analytics-and-supporting-services/04-amazon-athena/Amazon-Athena.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-Athena.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon opensearch service">
+          <div class="preview-box">
+            <img src="08-analytics-and-supporting-services/05-amazon-opensearch-service/Amazon-OpenSearch-Service.svg" alt="Amazon Opensearch Service" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Opensearch Service">Amazon Opensearch Service</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="08-analytics-and-supporting-services/05-amazon-opensearch-service/Amazon-OpenSearch-Service.svg" download>SVG</a>
+            <a class="action-btn" href="08-analytics-and-supporting-services/05-amazon-opensearch-service/Amazon-OpenSearch-Service-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/08-analytics-and-supporting-services/05-amazon-opensearch-service/Amazon-OpenSearch-Service.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-OpenSearch-Service.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="amazon rds">
+          <div class="preview-box">
+            <img src="08-analytics-and-supporting-services/06-amazon-rds/Amazon-RDS.svg" alt="Amazon Rds" loading="lazy">
+          </div>
+          <div class="asset-title" title="Amazon Rds">Amazon Rds</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="08-analytics-and-supporting-services/06-amazon-rds/Amazon-RDS.svg" download>SVG</a>
+            <a class="action-btn" href="08-analytics-and-supporting-services/06-amazon-rds/Amazon-RDS-512px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/08-analytics-and-supporting-services/06-amazon-rds/Amazon-RDS.svg')" title="Klik untuk copy relative path">
+              <span>assets/Amazon-RDS.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <section class="category-section" id="groups">
+      <div class="category-header">
+        <h2>Architecture Groups & Boundaries</h2>
+        <span class="badge">Diagram Components</span>
+        <p>Official AWS group boundary icons for Regions, VPC, Subnets, and Auto Scaling groups.</p>
+      </div>
+      <div class="grid">
+    
+        <div class="asset-card" data-name="aws cloud group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/AWS-Cloud-Group.svg" alt="Aws Cloud Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Aws Cloud Group">Aws Cloud Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/AWS-Cloud-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/AWS-Cloud-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/AWS-Cloud-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/AWS-Cloud-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="auto scaling group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/Auto-Scaling-Group.svg" alt="Auto Scaling Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Auto Scaling Group">Auto Scaling Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/Auto-Scaling-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/Auto-Scaling-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/Auto-Scaling-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/Auto-Scaling-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="corporate data center group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/Corporate-Data-Center-Group.svg" alt="Corporate Data Center Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Corporate Data Center Group">Corporate Data Center Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/Corporate-Data-Center-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/Corporate-Data-Center-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/Corporate-Data-Center-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/Corporate-Data-Center-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="ec2 instance contents group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/EC2-Instance-Contents-Group.svg" alt="Ec2 Instance Contents Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Ec2 Instance Contents Group">Ec2 Instance Contents Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/EC2-Instance-Contents-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/EC2-Instance-Contents-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/EC2-Instance-Contents-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/EC2-Instance-Contents-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="private subnet group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/Private-Subnet-Group.svg" alt="Private Subnet Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Private Subnet Group">Private Subnet Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/Private-Subnet-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/Private-Subnet-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/Private-Subnet-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/Private-Subnet-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="public subnet group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/Public-Subnet-Group.svg" alt="Public Subnet Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Public Subnet Group">Public Subnet Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/Public-Subnet-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/Public-Subnet-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/Public-Subnet-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/Public-Subnet-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="region group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/Region-Group.svg" alt="Region Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Region Group">Region Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/Region-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/Region-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/Region-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/Region-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-card" data-name="vpc group">
+          <div class="preview-box">
+            <img src="06-architecture-groups/VPC-Group.svg" alt="Vpc Group" loading="lazy">
+          </div>
+          <div class="asset-title" title="Vpc Group">Vpc Group</div>
+          <div class="asset-actions">
+            <a class="action-btn" href="06-architecture-groups/VPC-Group.svg" download>SVG</a>
+            <a class="action-btn" href="06-architecture-groups/VPC-Group-256px.png" download>PNG High-Res</a>
+            <div class="copy-chip" onclick="copyText('assets/06-architecture-groups/VPC-Group.svg')" title="Klik untuk copy relative path">
+              <span>assets/VPC-Group.svg</span>
+              <span>📋</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+  </main>
+
+  <div id="toast" class="toast">Path copied to clipboard!</div>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.textContent = 'Copied: ' + text;
+        toast.style.display = 'block';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 2200);
+      });
+    }
+
+    function filterAssets() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const cards = document.querySelectorAll('.asset-card');
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        if (name.includes(q)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
