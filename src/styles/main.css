@@ -1513,3 +1513,81 @@ kbd {
 .start-button:hover { background: #f8fafc; border-color: rgba(15, 23, 42, 0.35); box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1), 0 8px 20px rgba(15, 23, 42, 0.06); transform: translateY(-1px); }
 .start-button:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08); }
 .start-button:focus-visible { outline: 2px solid #64748b; outline-offset: 3px; }
+
+/* The close view keeps the established type sizes and task identity. */
+.slide-context:has(#graph-title-6) .act-badge { min-width: 0; }
+.delivery-output { cursor: pointer; }
+.delivery-output:focus { outline: none; }
+.delivery-output:focus-visible .node-rect { stroke: var(--aws-orange); stroke-width: 3; }
+
+/* Header text moves inside masks; persistent label and pill frames never fade. */
+.header-motion .header-text-mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .12em; margin-bottom: -.12em; }
+.header-motion .header-moving-text, .header-motion .story-act-label { display: inline-block; }
+
+.header-motion .service-pill { overflow: hidden; }
+
+/* Content review: reuse the readable editorial scale without new motion. */
+.slide-content-review .act-badge { min-width: 0; }
+.slide-closing-wrapper .rules-five-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.slide-closing-wrapper .rule-title { font-size: 1rem; }
+.slide-closing-wrapper .rule-desc { font-size: .95rem; }
+.slide-closing-wrapper .rule-box { transition: none; }
+@media (max-height: 850px) {
+  .slide-closing-wrapper .closing-main-title { font-size: 1.8rem; }
+  .slide-closing-wrapper .closing-summary { margin-bottom: 1rem; }
+  .slide-closing-wrapper .rules-five-grid { margin-bottom: 1rem; gap: .7rem; }
+  .slide-closing-wrapper .rule-box { padding: .75rem; }
+}
+
+/* Give the Lambda walkthrough more room without changing other slides. */
+.slide-context.slide-lambda-task { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); }
+.slide-lambda-task .graph-context .handler-code { font: 15px monospace; }
+@media (max-height: 850px) {
+  .slide-lambda-task .editorial-body-section { gap: .65rem; }
+  .slide-lambda-task .bullet-points-container { gap: .65rem; }
+}
+
+.presentation-stage.is-moving-divider .col-editorial { border-right-color: transparent; }
+.story-column-divider { stroke: var(--border-subtle); stroke-width: 1; }
+
+/* Native picker keeps direct navigation compact and fully keyboard accessible. */
+.footer-right { align-items: center; }
+.slide-jump { display: flex; align-items: center; gap: .6rem; }
+.slide-jump > span { font-size: .72rem; color: var(--text-muted); white-space: nowrap; }
+.slide-jump select { width: clamp(170px, 20vw, 310px); height: 32px; padding: 0 .6rem; border: 1px solid var(--border-subtle); border-radius: 4px; background: #fff; color: var(--text-main); font: 400 .78rem var(--font-sans); cursor: pointer; }
+.slide-jump select:focus-visible { outline: 2px solid var(--aws-orange); outline-offset: 2px; }
+@media (max-width: 1100px) {
+  .footer-center { display: none; }
+}
+
+/* Give the compute comparison enough horizontal room for its three alternatives. */
+.slide-context.slide-compute-choices { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); }
+@media (max-height: 850px) {
+  .slide-context.slide-compute-choices { grid-template-columns: minmax(0, 46%) minmax(0, 1fr); }
+}
+
+.slide-compute-choices .graph-group-label { font-weight: 700; }
+
+/* Queue headings anchor the lifecycle panels while service labels stay neutral. */
+.slide-context:has(#graph-title-9) .graph-group-label { font-weight: 700; }
+
+/* Fan-out: give the subscribers room and retain the established label scale. */
+.slide-context.slide-notifications { grid-template-columns: minmax(0, 44%) minmax(0, 1fr); }
+.slide-notifications .graph-group-label { font-weight: 700; }
+@media (max-height: 850px) {
+  .slide-context.slide-notifications { grid-template-columns: minmax(0, 47%) minmax(0, 1fr); }
+}
+
+/* Access: align identity, API permission and record checks on one reading axis. */
+.slide-context.slide-access { grid-template-columns: minmax(0, 43%) minmax(0, 1fr); }
+.slide-access .graph-group-label { font-weight: 700; }
+@media (max-height: 850px) {
+  .slide-context.slide-access { grid-template-columns: minmax(0, 46%) minmax(0, 1fr); }
+}
+
+/* Separate runtime calls from policy settings without shrinking service labels. */
+.slide-context.slide-task-access { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); }
+.slide-task-access .graph-group-label { font-weight: 700; }
+@media (max-height: 850px) {
+  .slide-context.slide-task-access { grid-template-columns: minmax(0, 45%) minmax(0, 1fr); }
+}

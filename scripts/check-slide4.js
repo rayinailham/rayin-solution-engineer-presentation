@@ -29,6 +29,8 @@ try {
   assert.equal(await page.locator('.graph-node').count(), 9);
   assert.equal(await page.locator('.graph-link.event').count(), 2);
   assert.equal(await page.locator('.official-cloud').count(), 1);
+  assert.match(await page.locator('.slide-narrative').innerText(), /status-change event instead of a direct API request/);
+  assert.match(await page.locator('.bullet-points-container').innerText(), /OrderConfirmed starts delivery planning and updates sales reports/);
   for (const viewport of [{width:1366,height:768}, {width:1920,height:1080}, {width:2560,height:1440}]) {
     await page.setViewportSize(viewport);
     const result = await page.evaluate(() => {

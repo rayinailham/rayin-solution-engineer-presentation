@@ -262,6 +262,67 @@ export const SLIDE_5_INSPECTORS = {
   }
 };
 
+// Stable task identities let the closer view deepen the same job from slide 5.
+export const SLIDE_6_INSPECTORS = {
+  eventbridge: {
+    service: "Amazon EventBridge — Delivery rule",
+    role: "The same event channel and delivery rule from slide 5. They send the order update to Plan delivery.",
+    sections: [
+      ["What starts it?", "After the required order steps succeed, Step Functions publishes OrderConfirmed. The main order workflow is still there, but is hidden in this closer view."],
+      ["What data comes in?", "The event has source apex.orders, type OrderConfirmed, order ID EV-1042, and status confirmed. Type means the event name. The graph shows a short summary; the source and field names are explained here."],
+      ["What does it do?", "On the same event bus, the delivery rule checks type OrderConfirmed and status confirmed. Both match. The rule is summarized under the EventBridge icon."],
+      ["Where does it go?", "EventBridge calls the same Plan delivery function with a copy of this event. A dashed arrow shows event delivery, not the order of workflow steps."],
+      ["Why keep it?", "It starts the delivery task after confirmation. The separate sales report rule still sends its own copy to Update sales report. That branch is hidden for focus."],
+      ["What is its limit?", "EventBridge selects and sends messages. It does not find order details or plan delivery. The team must grant access to the target and handle failed delivery. These event names and conditions are example choices."]
+    ]
+  },
+  'order-event': {
+    service: "OrderConfirmed — Event data",
+    role: "A message about the confirmed order. This is data for the task, not another AWS service.",
+    sections: [
+      ["What creates it?", "A configured step in the main Step Functions workflow publishes this message after the required order steps succeed."],
+      ["What does it contain?", "Source apex.orders names the sender. Type OrderConfirmed names what happened. Order ID EV-1042 identifies the order. Status confirmed gives its current state in this message."],
+      ["Where does it go?", "The delivery rule matches the type and status. EventBridge sends a copy to Plan delivery. The same sales report branch from slide 5 still gets its own copy, but is hidden here."],
+      ["Why is the order ID useful?", "The task can use it to find more details. We do not need to put every delivery detail in the event."],
+      ["What is its limit?", "Confirmed does not mean delivered. The message does not run code or contain a full delivery plan. Event fields are simplified for this example. In AWS, type is called detail-type; order ID and status sit in the event details."]
+    ]
+  },
+  'plan-delivery': {
+    service: "AWS Lambda — Plan delivery",
+    role: "The same delivery task from slides 4 and 5, enlarged. A function is a small program. Lambda is the AWS service that runs it.",
+    sections: [
+      ["What starts it?", "EventBridge calls this function after the delivery rule matches OrderConfirmed with status confirmed. This call starts the program; it is the trigger."],
+      ["What data comes in?", "It receives the full event summarized above, including order ID EV-1042. Lambda passes the JSON event to the handler, the entry point in our code. The order ID is available as event.detail.orderId. The program uses this ID to find the other order details it needs. The solid arrow to DynamoDB shows this lookup."],
+      ["What does our code do?", "Our team writes the program that finds the order details and asks the delivery system to start planning. The team also sets access permissions and handles errors. Lambda does not invent these business steps."],
+      ["What does AWS do?", "AWS provides and maintains the computing resources that run the program. The team can focus on the task. Lambda runs and automatically scales the function to process incoming events. Our team still chooses the runtime and configures permissions. The pseudocode uses illustrative helper names, not built-in Lambda APIs."],
+      ["Where does the result go?", "A planning request goes to the delivery system shown below the AWS Cloud boundary. The solid arrow shows a request to another system. It is not another OrderConfirmed event or a reply to Step Functions."],
+      ["How does it fit the order workflow?", "It reacts after confirmation, outside the main workflow. It does not check the order, reserve stock, or charge payment again. It does not wait for Update sales report."],
+      ["What is its limit?", "Sending a request does not mean planning succeeded or the vehicle was delivered. Our code must handle errors and avoid a second planning request if the event repeats. The task and its planning request are illustrative."]
+    ]
+  },
+  dynamodb: {
+    service: "Amazon DynamoDB — Order details",
+    role: "The order data store already introduced in the architecture. Plan delivery reads the details needed for planning.",
+    sections: [
+      ["What is read?", "The handler uses order ID EV-1042 from event.detail.orderId to read the order details. The exact fields and table design are illustrative."],
+      ["Why read the database?", "The event identifies the order without carrying every delivery detail. DynamoDB supplies the stored data; our code decides what to send to the delivery system."],
+      ["What permission is needed?", "The Lambda execution role needs permission to read the relevant order data. Reading data does not confirm a delivery plan or complete a delivery."]
+    ]
+  },
+  'planning-request': {
+    service: "Delivery system — Planning request",
+    role: "The delivery system receives a planning request from Plan delivery. It is an integration partner, not a new AWS service.",
+    sections: [
+      ["What creates it?", "The Plan delivery program creates this request after receiving the event and finding the details it needs for order EV-1042."],
+      ["What data goes out?", "The request identifies order EV-1042 and includes the delivery details needed by the receiving system. Only the order ID is shown. The exact fields are an example design choice."],
+      ["Where does it go?", "It goes to the delivery system to ask it to start planning. The system is drawn outside the AWS Cloud boundary; its hosting and response are unspecified."],
+      ["How does it fit the workflow?", "This is work after order confirmation. It is not returned to Step Functions, and it does not replace the order database, notifications, or sales report."],
+      ["Why show it?", "Receiving an event is only the start. The task must do useful work. Here, its useful output is a request for a delivery plan."],
+      ["What is its limit?", "A sent request is not proof of a completed plan or delivery. The task code must check failures and avoid duplicate requests. The delivery system owns the planning work."]
+    ]
+  }
+};
+
 export const INSPECTOR_DATA = {
   "eventbridge": {
     service: "Amazon EventBridge",
@@ -801,5 +862,438 @@ Resources:
         "RTO": "< 10 seconds (Automated Failover)"
       }
     }, null, 2)
+  }
+};
+
+// Contextual explanations for the remainder of the course. Task keys describe
+// responsibilities, never a node's position in the drawing.
+const API_ORDER_INSPECTORS = {
+  mobile: {
+    service: 'Buyer app',
+    role: 'Sends an order and checks its progress separately.',
+    sections: [
+      ['What starts it?', 'The buyer chooses a vehicle. The app sends HTTPS POST /orders with order details and a stable order or request ID.'],
+      ['What comes back?', 'The initial reply carries a workflow reference. It means execution started; the database write may still be pending or may fail.'],
+      ['How is storage checked?', 'A separate authenticated status route can read the order record. RECEIVED means that the record was written successfully. It does not prove stock reservation, payment or order confirmation. The route is hidden in this diagram.']
+    ]
+  },
+  apigateway: {
+    service: 'Amazon API Gateway',
+    role: 'The same order entry point shown on slide 2.',
+    sections: [
+      ['What happens here?', 'A REST API route maps POST /orders to Step Functions StartExecution using a configured IAM execution role. API Gateway returns a workflow reference without waiting for the workflow to finish.'],
+      ['What belongs in the API?', 'Configure authentication, authorization, request limits and CloudWatch monitoring. A separate status route must check that the caller can access the requested order. Access checks do not verify vehicle availability or payment.'],
+      ['Which API type?', 'This example uses a REST API with an AWS service integration. HTTP APIs support a different feature set; WebSocket APIs support two-way updates. This design does not need all three.'],
+      ['What does a successful reply prove?', 'It proves StartExecution succeeded, not that DynamoDB stored the order. The team maps success and errors into API responses. API Gateway does not perform the business workflow or save the record itself.']
+    ]
+  },
+  stepfunctions: {
+    service: 'AWS Step Functions',
+    role: 'Starts the order workflow and runs an early task that saves the order.',
+    sections: [
+      ['What comes in?', 'API Gateway calls StartExecution with order details and a stable order or request ID. StartExecution returns an execution ARN and start time, not a saved order or completed business result.'],
+      ['How does it save?', 'An early Task state uses the direct DynamoDB PutItem integration to write orderId EV-1042 and status RECEIVED. Step Functions waits for that task response before progressing. A Lambda function is not required just to make this database call.'],
+      ['What follows?', 'Only after a successful write does the workflow continue to the existing Check order, Reserve stock and Charge payment tasks. Later success can update the order to CONFIRMED and publish OrderConfirmed, as shown on earlier slides. Those later steps are hidden here.'],
+      ['What if something fails?', 'A successful StartExecution reply can arrive before PutItem finishes. Configure task permissions, error handling and safe retries. A failed write must not be presented as a stored order. Use a stable order ID and a conditional write to avoid overwriting an existing order on a repeated request.']
+    ]
+  },
+  dynamodb: {
+    service: 'Amazon DynamoDB',
+    role: 'Stores the order record with the initial business status RECEIVED.',
+    sections: [
+      ['What is written?', 'Example item: orderId = EV-1042, status = RECEIVED, plus the order details needed by later tasks. RECEIVED is an application-defined value, not a built-in DynamoDB status.'],
+      ['When is it received?', 'Only a successful PutItem response means the write succeeded. Starting the workflow is a separate event and does not guarantee this write. The initial API reply is therefore labelled as a workflow reference.'],
+      ['How do retries stay safe?', 'Use a stable order or request ID and a condition such as attribute_not_exists(orderId) when creating the item. Repeated submissions must not overwrite an existing order or repeat payment. The application decides how to return an existing result.'],
+      ['How is progress read?', 'A separate authenticated status endpoint can read the record by order ID. If immediate visibility is required, use a strongly consistent GetItem read on the base table. An eventually consistent read may briefly miss a new item. The status route and read integration are omitted for focus.'],
+      ['What comes next?', 'The workflow advances the business status after its checks succeed. RECEIVED is not CONFIRMED, PAID or DELIVERED. This is the same order data service shown on slide 6; the diagram now shows how its record begins.']
+    ]
+  }
+};
+
+const DELIVERY_QUEUE_INSPECTORS = {
+  eventbridge: {
+    service: 'Amazon EventBridge',
+    role: 'Uses the same delivery rule, now with an SQS queue as its target.',
+    sections: [
+      ['What comes in?', 'The main workflow publishes OrderConfirmed after the required order steps succeed. The event still carries source apex.orders, order ID EV-1042 and status confirmed.'],
+      ['What changes from slide 6?', 'The delivery rule still checks event type and status. Here its target is the delivery queue, rather than calling Plan delivery directly. The sales report rule still exists and is hidden.'],
+      ['Where does the result go?', 'A matching update goes to SQS to wait for processing. EventBridge does not wait for a delivery plan. The team must also handle a failure to send the event to the queue.'],
+      ['Why add this?', 'Routing still chooses the receiver. The queue adds a place for waiting work. This is an illustrative design change, not a new responsibility for EventBridge.']
+    ]
+  },
+  'delivery-queue': {
+    service: 'Amazon SQS — Delivery queue',
+    role: 'A queue holds delivery updates until a task can process them.',
+    sections: [
+      ['What comes in?', 'The EventBridge delivery rule sends the same OrderConfirmed message with order ID EV-1042 and status confirmed.'],
+      ['How does work start?', 'A configured Lambda event source mapping reads messages from SQS and calls Plan delivery with them. This mapping is the connection between the queue and the function. The arrow shows data flow; SQS does not push a direct function call.'],
+      ['What happens after processing?', 'After successful processing, the Lambda integration removes the messages. A failed message can become available again after a configured hiding period, called the visibility timeout. By default, a failed batch can cause successful records to be retried too. Configure ReportBatchItemFailures and return failed message IDs to retry only failed records. Set visibility timeout to at least six times the function timeout, plus any batch window.'],
+      ['Why is it here?', 'Delivery work can wait during a burst. The main workflow does not wait for the queue to empty. Set message retention, processing capacity, failure handling and alerts. Storage is time-limited.'],
+      ['What about repeats and order?', 'Standard queues may repeat messages or change their order. FIFO means first in, first out; it adds ordered message groups and deduplication. Either choice still needs safe task code. Use the order ID to avoid asking for the same plan twice.']
+    ]
+  },
+  'plan-delivery': {
+    service: 'AWS Lambda — Plan delivery',
+    role: 'The same program from slide 6. Only its incoming path has changed.',
+    sections: [
+      ['What starts it now?', 'The Lambda service reads waiting messages from SQS through a configured connection. The function receives the queued OrderConfirmed event, including order ID EV-1042.'],
+      ['What does it do?', 'The program finds the needed order details and asks the delivery system for a plan. The lookup, planning request and outside system are hidden here.'],
+      ['Where does the result go?', 'The planning request goes to the delivery system. A successful function result lets the SQS integration remove the message. It is not a delivery confirmation or a reply to the main order workflow.'],
+      ['Why keep the same task?', 'A queue changes when work starts, not the task responsibility. Plan delivery still does not reserve stock, charge payment or update the sales report.'],
+      ['What needs care?', 'The same message may be processed again. Record and check the order reference so retries do not create duplicate planning requests. A failure needs a retry or review path.']
+    ]
+  },
+  'delivery-dlq': {
+    service: 'Amazon SQS — Delivery dead-letter queue',
+    role: 'A separate queue for messages that repeatedly fail processing.',
+    sections: [
+      ['What sends a message here?', 'A redrive policy on the source queue defines how many receives are allowed before moving a failed message here. The policy must be configured.'],
+      ['What data comes in?', 'The failed delivery message is kept for investigation, including its order reference. The team can find the related function logs.'],
+      ['What happens next?', 'An alert should tell the team to review the error, fix the cause and decide whether to process the message again. This queue does not fix or retry the work by itself.'],
+      ['Why is it here?', 'A bad message should be visible for review rather than repeatedly blocking useful work. Set retention and alerts. It is not a promise of no data loss and does not mean the order was delivered.']
+    ]
+  }
+};
+
+const NOTIFICATION_INSPECTORS = {
+  stepfunctions: {
+    service: 'AWS Step Functions',
+    role: 'The same workflow publishes an order status notification to SNS.',
+    sections: [
+      ['What starts this action?', 'A configured step runs when the workflow has an order status to share. The message contains the order reference and status.'],
+      ['Where does it go?', 'The step publishes to the SNS topic. It waits for that service call result, not for the buyer to read a message. The separate OrderConfirmed event still goes to EventBridge for delivery planning and reporting.'],
+      ['Why is it here?', 'This expands the notification connection from slide 2. Sending one update to SNS avoids contacting each notification receiver from the workflow. Publishing failures still need handling.']
+    ]
+  },
+  sns: {
+    service: 'Amazon Simple Notification Service (Amazon SNS)',
+    role: 'Shares an order update through a topic, a named notification channel.',
+    sections: [
+      ['What comes in?', 'The order workflow publishes a status message, such as the order ID and its new status, to a configured topic.'],
+      ['What does SNS do?', 'SNS sends a copy to each matching subscription. A subscription connects a receiver to the topic. Filters can limit which messages that receiver gets. Here the receivers are a buyer SMS channel, a support HTTPS application and an optional SQS queue. This diagram uses a Standard topic.'],
+      ['Where do results go?', 'Each receiver handles its copy separately. SNS does not collect their business results for the workflow. More receivers can be added, including separate SQS queues. This copying pattern is called fan-out.'],
+      ['How is it different?', 'SQS holds waiting work for processing. EventBridge routes events using rules and many event integrations. SNS shares notifications with subscribers. These services can be combined; they are not compulsory replacements for one another.'],
+      ['What is its limit?', 'Standard topics can deliver duplicates or messages out of order. Make consumers idempotent. Retry policies depend on the endpoint protocol; attach an SQS dead-letter queue to each applicable subscription to retain undelivered messages. Configure topic and queue policies. Sent does not mean read; delivered messages cannot be recalled.']
+    ]
+  },
+  'notification-queue': {
+    service: 'Amazon Simple Queue Service (Amazon SQS)',
+    role: 'An optional SNS subscriber buffers a separate copy for an independent consumer.',
+    sections: [
+      ['What arrives?', 'SNS pushes a copy of each matching update into this subscribed Standard queue. The queue policy must allow the intended SNS topic to send messages.'],
+      ['What happens next?', 'A consumer polls this queue at its own pace. Each additional processing application can have its own queue and subscription; consumers sharing one queue compete for its messages.'],
+      ['Is it the delivery queue or a DLQ?', 'Neither. This is a separate notification subscriber. Slide 9’s EventBridge delivery queue stays unchanged. A subscription DLQ is another queue for failed SNS deliveries, not this normal message path.']
+    ]
+  },
+  mobile: {
+    service: 'Buyer notification channel',
+    role: 'An example receiver of order updates, such as SMS.',
+    sections: [
+      ['What starts it?', 'An SNS message is routed to the configured buyer notification channel. The exact addressing and subscription setup are hidden.'],
+      ['What data arrives?', 'The order reference and a suitable status message. Send only the personal data needed for that channel.'],
+      ['What happens next?', 'The notification informs the buyer. It does not charge a payment or prove that the buyer read it. The app still needs a status-check route. This is an illustrative receiver outside the order workflow.']
+    ]
+  },
+  internet: {
+    service: 'Support notification app',
+    role: 'An example HTTPS subscriber for the support team.',
+    sections: [
+      ['What starts it?', 'SNS sends an order status message to a subscribed HTTPS endpoint, an app address reached over an encrypted web connection.'],
+      ['What does it do?', 'The support app uses the reference and status to inform its staff. Its internal storage and display are not drawn.'],
+      ['Why is it separate?', 'Support receives its own copy without changing the order tasks. This is a notification example, not the Update sales report Lambda. Delivery errors and repeated messages need handling in the receiver.']
+    ]
+  }
+};
+
+const DELIVERY_ACCESS_INSPECTORS = {
+  eventbridge: {
+    service: 'Amazon EventBridge',
+    role: 'The configured event source allowed to start Plan delivery in this direct-trigger view.',
+    sections: [
+      ['What comes in?', 'The same OrderConfirmed event arrives from the order workflow. A matching delivery rule sends its order data to Plan delivery.'],
+      ['Which permission matters?', 'In this resource-based policy example, allow events.amazonaws.com to use lambda:InvokeFunction on this function, with aws:SourceArn restricted to the delivery rule ARN. This is separate from the execution role.'],
+      ['Why this view?', 'It returns to the direct path on slide 6 so the two permission questions are easier to compare. The SQS alternative on slide 9 needs its own queue and integration permissions. Neither path is automatically safe without configuration.']
+    ]
+  },
+  'plan-delivery': {
+    service: 'AWS Lambda — Plan delivery',
+    role: 'The same task, shown with limited access to saved order details.',
+    sections: [
+      ['What starts it?', 'The configured EventBridge rule calls the function with the OrderConfirmed event and order ID EV-1042. This drawing uses the direct path from slide 6.'],
+      ['What data does it need?', 'Its code reads the order details needed for planning from DynamoDB. This illustrates one possible source for the lookup that slide 6 hid. The data returns to the task; reply arrows are hidden.'],
+      ['What does it do next?', 'It asks the delivery system for a plan. That system and the request are hidden. This does not change the main order workflow or repeat a charge.'],
+      ['What permissions should it have?', 'Give its IAM execution role only the needed data actions. The example lookup is read-only. Do not grant order deletion or payment actions just because other tasks need them. Restrict which order data can be read where the design allows.'],
+      ['What remains our work?', 'Validate input, protect secrets, update code dependencies and handle failures and repeated events. Secrets Manager can store and rotate supported secrets; a private network alone does not grant or limit service permissions.']
+    ]
+  },
+  dynamodb: {
+    service: 'Amazon DynamoDB — Order details',
+    role: 'Provides saved order details to Plan delivery in this example.',
+    sections: [
+      ['What starts the lookup?', 'Plan delivery sends a read request with an order reference using its own task permissions.'],
+      ['What happens here?', 'DynamoDB checks the access rules and returns the matching record or an error. The response is hidden. It does not arrange delivery itself.'],
+      ['Why is it here?', 'It makes the task access boundary visible. Read access must not silently include write or delete access. A signed-in buyer and a Lambda execution role are different identities with different permissions.']
+    ]
+  },
+  'delivery-role': {
+    service: 'AWS Identity and Access Management (IAM) — Delivery role',
+    role: 'The permissions Plan delivery uses when it calls AWS services.',
+    sections: [
+      ['When is it used?', 'Lambda uses the configured execution role while running the task. This role is a permission setting, not another order-processing step.'],
+      ['What does it allow here?', 'Lambda assumes this role using temporary credentials; its trust policy allows lambda.amazonaws.com. The illustrative data policy allows dynamodb:GetItem on the Orders table ARN only. Logging and any other required actions need their own scoped permissions. Give each task its own role.'],
+      ['Where does the result go?', 'AWS checks these permissions when the task calls a service. The service returns data or an access error to the task. The role does not receive an order event.'],
+      ['What does it not do?', 'It does not decide who may start the function, prove a buyer owns an order, or replace encryption. Policies controlling the caller, the task and the data need to work together.']
+    ]
+  }
+};
+
+const WORKFLOW_INSPECTORS = {
+  stepfunctions: {
+    service: 'AWS Step Functions',
+    role: 'Runs the same order plan and follows the chosen success and error paths.',
+    sections: [
+      ['What starts it?', 'API Gateway starts one workflow run with the order data. The entry service and data access are hidden here.'],
+      ['What is a state machine?', 'It is a plan of steps and decisions. A Task step does work. A Choice step selects a path. Wait pauses the plan. Parallel starts separate branches. This drawing focuses on the task sequence and error paths.'],
+      ['What does this plan do?', 'Call Check order, then Reserve stock, then Charge payment. Pass the needed input and results between steps. After required success, a configured step publishes OrderConfirmed to EventBridge. The connecting arrows are workflow sequence, not Lambda functions calling one another.'],
+      ['How are failures handled?', 'Configure Retry for selected errors and Catch for an error path. In this example the error path handles a failure for review or recovery. It must also handle a rejected order or unavailable stock. Undoing a reservation or refunding payment requires explicit work; Step Functions does not invent a rollback.'],
+      ['Which workflow type?', 'Standard suits durable business workflows with a recorded history. Express suits short, high-volume event work. Choose by duration, history and execution needs. Retrying or restarting a payment still needs protection against double charges.'],
+      ['What is its limit?', 'A step result means what that integration reports. A completed Lambda call can return its result, but an accepted request to an outside system may only mean work was started. Choose a wait or callback pattern when the plan needs later completion. Delivery and report targets remain independent of this order workflow.']
+    ]
+  },
+  ...Object.fromEntries(Object.entries(ORDER_TASK_INSPECTORS).map(([key, data]) => [key, {
+    ...data,
+    sections: data.sections.map(([heading, text]) => [heading, text.replace('The solid branches show calls, not three tasks running at once.', 'The solid arrows here show the sequence chosen by Step Functions.')])
+  }])),
+  eventbridge: {
+    service: 'Amazon EventBridge',
+    role: 'Receives OrderConfirmed only on the configured success path.',
+    sections: [
+      ['What starts it?', 'After the required order tasks succeed, a workflow step publishes the event. The drawing line follows the success path; it does not mean Charge payment independently publishes the event.'],
+      ['What data arrives?', 'The same OrderConfirmed event carries source apex.orders, order ID EV-1042 and status confirmed. The task names, event fields and publish point are choices for this teaching example.'],
+      ['Where does it go?', 'Matching rules route the event to delivery planning and sales reporting. Those targets are hidden. EventBridge does not decide the earlier task order.'],
+      ['What remains to do?', 'The team must handle failed publishing and keep saved order state and its published event consistent. A successful publish does not mean the downstream tasks have finished.']
+    ]
+  }
+};
+
+const DATA_CONTROL_INSPECTORS = {
+  dynamodb: {
+    service: 'Amazon DynamoDB',
+    role: 'The managed database for saved order records.',
+    sections: [
+      ['What comes in?', 'Authorized workflow steps or task code send order records or lookup requests. These business calls are hidden because this slide focuses on data controls.'],
+      ['What does it do?', 'It saves and returns data such as an order ID and status. A global secondary index is an extra lookup structure for a different question, such as finding orders by status. Choose keys and indexes for the access patterns the app needs.'],
+      ['Why is it here?', 'Order records outlive one function run. DynamoDB encrypts stored data using encryption keys managed through AWS KMS. The team still chooses access rules and protects sensitive information.'],
+      ['What is its limit?', 'It does not set workflow steps or send the OrderConfirmed event in this design. A single-table layout is an optional modeling choice, not a course requirement. This drawing promises neither unlimited load nor a fixed response time.']
+    ]
+  },
+  kms: {
+    service: 'AWS Key Management Service (AWS KMS)',
+    role: 'Manages encryption keys used to protect data.',
+    sections: [
+      ['When is it used?', 'A service such as DynamoDB uses configured encryption keys when protecting stored data. The team chooses the key option and the permissions that apply.'],
+      ['What does it protect?', 'Encryption makes stored data unreadable without the right key. Use encrypted connections as well. KMS is shown as a control beside storage, not a new order task or a network gateway.'],
+      ['What is its limit?', 'A key does not decide whether a buyer may see an order. Access rules, key permissions and safe code still matter. Audit and retention settings need configuration; this is not a promise of permanent records of every action.']
+    ]
+  },
+  cloudtrail: {
+    service: 'AWS CloudTrail',
+    role: 'Records AWS API activity for audit: who did what and when.',
+    sections: [
+      ['What starts a record?', 'An AWS API action covered by the configured event collection produces an activity record. For example, an administrator changes a resource setting.'],
+      ['What data is recorded?', 'Records can identify the caller, action, resource, time and result. Configure the required event types, storage and retention. Not every data operation is automatically part of the same default collection.'],
+      ['Where does it go?', 'The team reviews the activity history or configured log destination to investigate changes. This sits beside the business workflow, rather than receiving order events as its next step.'],
+      ['Why use it?', 'It supports investigation and audit. It does not prove an order was delivered or replace application logs. An audit record alone does not prevent an unsafe action.']
+    ]
+  },
+  config: {
+    service: 'AWS Config',
+    role: 'Records supported resource settings and checks them against chosen rules.',
+    sections: [
+      ['What starts it?', 'Configured recording collects resource settings and changes. Rules evaluate the supported resources according to the chosen triggers.'],
+      ['What does it check?', 'For example, the team can check whether a resource meets a required access setting. The exact rule and resource support must match the requirement.'],
+      ['Where does the result go?', 'The team receives compliance results and can set up a response. A response action must be configured; Config does not repair every problem by itself.'],
+      ['Why is it here?', 'CloudTrail explains actions. Config helps explain settings and rule compliance. Neither service performs the order workflow or guarantees that the application meets every regulation.']
+    ]
+  }
+};
+
+const OBSERVABILITY_INSPECTORS = {
+  stepfunctions: {
+    service: 'AWS Step Functions',
+    role: 'The same order workflow calls Charge payment in this enlarged view.',
+    sections: [
+      ['What comes in?', 'The order has passed the earlier checks and stock reservation in our example sequence. The workflow passes the order and payment reference to the task.'],
+      ['What happens next?', 'The task returns its result and the workflow chooses the next step. Results and the other steps are hidden. Logs and workflow history help the team find where the order stopped.'],
+      ['Why is it here?', 'It connects the payment investigation to the main order plan. Monitoring evidence does not change task order or automatically repair a failed payment.']
+    ]
+  },
+  'charge-payment': {
+    service: 'AWS Lambda — Charge payment',
+    role: 'The same payment task, now shown with its monitoring evidence.',
+    sections: [
+      ['What starts it?', 'Step Functions calls the task with the order and payment reference after stock is reserved in our example.'],
+      ['What does it do?', 'Its code asks the outside payment provider to process the charge. The result returns to the workflow. Reply arrows are hidden. A lost reply is not proof that no charge happened.'],
+      ['What evidence does it send?', 'With suitable permissions and setup, task logs and measurements go to CloudWatch. Configured tracing sends request timing information to X-Ray. The team records the needed calls and carries a safe order reference across messages.'],
+      ['Why is it here?', 'It shows how evidence can distinguish a code error from a slow partner call. Avoid recording full payment details or secrets. Sampling and missing records can limit a trace.'],
+      ['What is its limit?', 'It still does only the payment task. Evidence collection is not instant diagnosis. The code must prevent repeat charges and check uncertain payment results before retrying.']
+    ]
+  },
+  internet: {
+    service: 'External payment provider',
+    role: 'The outside service asked to process the charge.',
+    sections: [
+      ['What starts it?', 'Charge payment sends an authorized payment request with a payment reference. Full card data is not shown.'],
+      ['Where does the result go?', 'The reply goes back to the task and then to Step Functions. The outside provider owns its payment processing, not the Lambda service. Reply arrows are hidden.'],
+      ['Why show it?', 'A delay can happen outside our code. Recorded call timing helps investigate it. A trace of our request does not reveal all of the provider internals or guarantee payment success.']
+    ]
+  },
+  cloudwatch: {
+    service: 'Amazon CloudWatch',
+    role: 'Collects logs and measurements so the team can understand app behavior.',
+    sections: [
+      ['What comes in?', 'Configured services and task code send logs and metrics. Logs are records of what happened. Metrics are numbers over time, such as errors, queue age and completed orders. Only the payment task evidence is drawn here.'],
+      ['What can the team do?', 'Use Logs Insights to search records, view dashboards and create alarms for chosen thresholds. Alerts can go through SNS. The team must select the measurements and responses.'],
+      ['Where does this fit?', 'It sits beside the order workflow. Blue lines carry evidence, not orders or instructions to run the next task.'],
+      ['Why is it needed?', 'A small team needs to know whether orders finish and where problems appear. Enable the required logs, permissions, alarms and retention. Do not expect every business event to appear without adding it to the code.']
+    ]
+  },
+  xray: {
+    service: 'AWS X-Ray',
+    role: 'Combines recorded parts of a request into a trace of its journey.',
+    sections: [
+      ['What comes in?', 'With tracing enabled and the needed code instrumentation, services send timing and result information. Instrumentation means adding the setup or code that records an operation.'],
+      ['What does it show?', 'A trace can show which recorded call took time, such as a payment-provider request. Open the details and compare them with logs and metrics.'],
+      ['Where does it fit?', 'It is investigation evidence beside the workflow. It does not process a payment or set the order steps.'],
+      ['What is its limit?', 'Only recorded and collected operations are visible. Sampling can leave some requests out, and message paths need suitable linking. Carry order IDs for investigation across events. A trace does not guarantee immediate root-cause detection.']
+    ]
+  }
+};
+
+export const SLIDE_INSPECTORS = {
+  2: SLIDE_2_INSPECTORS,
+  3: SLIDE_3_INSPECTORS,
+  4: SLIDE_4_INSPECTORS,
+  5: SLIDE_5_INSPECTORS,
+  6: SLIDE_6_INSPECTORS,
+  7: API_ORDER_INSPECTORS,
+  8: {
+    'check-order': {
+      ...ORDER_TASK_INSPECTORS['check-order'],
+      role: 'An example short task already used in our order workflow.',
+      sections: [
+        ['Why choose Lambda here?', 'Check order starts when the workflow needs it and returns a result. AWS runs the code and manages the servers. The standard Lambda compute used here has a maximum of 15 minutes per invocation, so it is not an always-running application. Lambda Managed Instances has separate timeout rules and is outside this example. The order workflow is hidden in this comparison.'],
+        ['What goes in and out?', 'Step Functions sends order details. Check order checks the required details and returns a pass or a problem. The workflow decides the next step. The workflow is hidden in this comparison.'],
+        ['What does the team own?', 'The task program, its settings, permissions and error handling. Costs depend on use and configuration. This comparison does not replace Check order or claim that every job should use Lambda.']
+      ]
+    },
+    ecs: {
+      service: 'Amazon Elastic Container Service (Amazon ECS)',
+      role: 'Manages container tasks and services. A container bundles a program and what it needs.',
+      sections: [
+        ['What starts work?', 'The team defines which packaged program to run and whether it should keep running or start for a job. ECS manages those container tasks. Amazon Elastic Kubernetes Service (Amazon EKS) is another orchestrator when Kubernetes is required.'],
+        ['Where does it run?', 'The team can choose Fargate managed capacity or EC2 servers. The drawing shows choices, not a sequence of calls.'],
+        ['Why choose it?', 'Containers can give programs a consistent package and suit longer-running services. The program still decides what data to read and where results go. ECS does not replace our order workflow by default.']
+      ]
+    },
+    fargate: {
+      service: 'AWS Fargate',
+      role: 'Runs containers without the team managing the underlying servers.',
+      sections: [
+        ['What starts it?', 'A configured ECS task can request Fargate capacity for a container. The container image contains the program and what it needs.'],
+        ['What does it do?', 'Fargate provides the running resources. The program handles its input, work and output. This comparison does not add a container job to the EV workflow.'],
+        ['Why choose it?', 'It can suit longer-running packaged programs with less server maintenance. The team still owns the program, resource choices, permissions and cost. Fargate and ECS have different roles, not competing steps in a ladder.']
+      ]
+    },
+    ec2: {
+      service: 'Amazon Elastic Compute Cloud (Amazon EC2)',
+      role: 'Rented server capacity with more control over server software and settings.',
+      sections: [
+        ['What runs here?', 'The team chooses a program and operating system, the software that manages the computer. The program decides what starts work, which data it uses and where results go.'],
+        ['Why choose it?', 'Some jobs need specific server settings or long-running processes. EC2 can also run containers and separate services. It is not restricted to old applications.'],
+        ['What does the team own?', 'More capacity planning, server software updates and recovery work. These choices can be combined with Lambda and containers. The graph is a comparison, not a change to the EV order design.']
+      ]
+    }
+  },
+  9: DELIVERY_QUEUE_INSPECTORS,
+  10: NOTIFICATION_INSPECTORS,
+  11: {
+    mobile: {
+      service: 'Buyer app',
+      role: 'Signs in first, then sends the token with its API request.',
+      sections: [
+        ['What starts it?', 'The buyer signs in through Cognito. After successful sign-in, the app receives a signed token with an expiry. A token is proof the API can check.'],
+        ['Where does the data go?', 'The app sends the token with an order or status request to API Gateway over an encrypted connection. Sign-in replies and business replies are simplified.'],
+        ['Why is it here?', 'It makes the identity path clear: the token returns to the app before the app calls the API. It is not a direct order request from Cognito to the workflow. The app should not receive broad AWS service permissions just to use this API.']
+      ]
+    },
+    cognito: {
+      service: 'Amazon Cognito',
+      role: 'Handles user sign-in and supplies signed tokens the app can present.',
+      sections: [
+        ['What starts it?', 'The buyer app sends a sign-in request. A user pool keeps user identities and can connect to other sign-in providers.'],
+        ['What comes out?', 'After successful sign-in, the app receives ID, access and refresh tokens. This example sends the access token with the HTTPS API request. A signed JWT is not encrypted: do not put secrets in its readable claims.'],
+        ['User pool or identity pool?', 'A user pool supports sign-in and tokens. An identity pool can provide temporary AWS credentials when direct access to AWS resources is needed. It is not required for this token-to-API example.'],
+        ['What is its limit?', 'Cognito proves identity; it does not decide that a buyer owns every requested order. The app still needs access rules, secure data handling and code checks. AWS operates the service; the team owns its configuration.']
+      ]
+    },
+    apigateway: {
+      service: 'Amazon API Gateway',
+      role: 'Checks the app token and configured API permissions before starting order work.',
+      sections: [
+        ['What comes in?', 'The app sends an API request with order data and a token it obtained from Cognito. Authentication checks identity; authorization checks what that identity may do.'],
+        ['What happens here?', 'This is a REST API with a Cognito user pool authorizer. It validates the token signature and expiry. Configure OAuth scopes on each protected method to use access tokens and require a matching scope. Rejected requests do not start the workflow. An HTTP API uses a JWT authorizer instead.'],
+        ['What remains in code?', 'Pass verified authorizer claims such as sub to the backend using the integration mapping. Task code compares that trusted buyer identity with the order owner before returning or changing order data. Never use a caller-supplied buyer ID as proof. API permission alone does not grant access to every record.'],
+        ['Why is it here?', 'It protects the shared front door. Rate limits and WAF rules can add protection against unwanted traffic, but do not replace identity, task permissions or safe code. Error responses and extra protection layers are hidden.']
+      ]
+    },
+    stepfunctions: {
+      service: 'AWS Step Functions',
+      role: 'The same order workflow receives requests that passed the configured API checks.',
+      sections: [
+        ['What comes in?', 'API Gateway starts a run with allowed order input. The app and task code still need checks for the intended buyer and order.'],
+        ['What happens next?', 'The workflow runs the existing order tasks and follows their results. Its task calls and storage are hidden on this access-focused slide.'],
+        ['What is its limit?', 'It is not a sign-in service. The team must restrict who may start it and what each step may access. AWS operating the service does not remove those responsibilities.']
+      ]
+    }
+  },
+  12: DELIVERY_ACCESS_INSPECTORS,
+  13: WORKFLOW_INSPECTORS,
+  14: DATA_CONTROL_INSPECTORS,
+  15: OBSERVABILITY_INSPECTORS,
+  16: {
+    mobile: API_ORDER_INSPECTORS.mobile,
+    apigateway: API_ORDER_INSPECTORS.apigateway,
+    stepfunctions: {
+      service: 'AWS Step Functions',
+      role: 'The same Check order, Reserve stock and Charge payment workflow, summarized as one node.',
+      sections: [
+        ['What starts it?', 'API Gateway passes the order request to start the workflow. The plan calls the same three task programs; their icons are hidden inside this summary.'],
+        ['Where does data go?', 'The workflow uses DynamoDB for saved order data and SNS for status notifications. After required success it publishes OrderConfirmed to EventBridge. These service connections do not mean all steps run in parallel.'],
+        ['What happens after publishing?', 'EventBridge sends a copy through the delivery queue to Plan delivery and another copy directly to Update sales report. Their business results do not return to this main workflow.'],
+        ['What must the POC prove?', 'Test task sequence, error handling, access and safe repeated work. Recovery actions and the consistency between saved orders and published events need an explicit design. This graph is a proposal, not evidence of a successful launch.']
+      ]
+    },
+    dynamodb: SLIDE_2_INSPECTORS.dynamodb,
+    sns: {
+      ...NOTIFICATION_INSPECTORS.sns,
+      role: 'The same order notification topic from slides 2 and 10. Its subscribers are hidden here.',
+      sections: [
+        ['What comes in?', 'The order workflow publishes a status notification with the order reference and suitable status data.'],
+        ['Where does it go?', 'SNS sends copies to configured subscribers, such as buyer and support channels. Those receivers are not drawn in this summary. Filters and access rules must be configured.'],
+        ['Why is it still here?', 'It shares notifications while EventBridge routes OrderConfirmed to the independent task branches. SNS does not replace the workflow or database. A sent message is not proof it was read.']
+      ]
+    },
+    eventbridge: {
+      ...DELIVERY_QUEUE_INSPECTORS.eventbridge,
+      sections: [
+        ['What comes in?', 'The workflow publishes OrderConfirmed after required success. The same illustrative event carries source apex.orders, order ID EV-1042 and status confirmed.'],
+        ['What happens here?', 'The delivery rule checks the event type and status and sends a copy to the delivery SQS queue. The sales report rule checks the type and sends a separate copy directly to Update sales report. Both rules belong to the same bus.'],
+        ['Why is it here?', 'It routes independent reactions without setting the main order sequence. These tasks do not have a fixed order between them. Handle failed delivery and repeated messages; routing success does not mean business work is finished.']
+      ]
+    },
+    'delivery-queue': DELIVERY_QUEUE_INSPECTORS['delivery-queue'],
+    'plan-delivery': DELIVERY_QUEUE_INSPECTORS['plan-delivery'],
+    'update-sales-report': SLIDE_4_INSPECTORS['update-sales-report']
   }
 };

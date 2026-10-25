@@ -1,7 +1,86 @@
 import gsap from 'gsap';
 import { SLIDES } from './data/slides.js';
-import { INSPECTOR_DATA, SLIDE_2_INSPECTORS, SLIDE_3_INSPECTORS, SLIDE_4_INSPECTORS, SLIDE_5_INSPECTORS } from './data/inspectors.js';
+import { INSPECTOR_DATA, SLIDE_INSPECTORS } from './data/inspectors.js';
 import { renderSlideDiagram, animateSlideDiagram } from './slides/diagrams.js';
+
+// Shared header choreography for 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12. Keep the frame visible;
+// roll changing text and carry pill positions using compositor transforms.
+function createEditorialHeaderMotion(root, slide) {
+  const top = root.querySelector('.editorial-top-section');
+  const oldPart = top.querySelector('.act-badge > span').textContent;
+  const newPart = slide.act.split(':')[0] + ':';
+  let finalMarkup;
+  const wrap = element => {
+    const clip = document.createElement('span');
+    clip.className = 'header-text-mask';
+    const word = document.createElement('span');
+    word.className = 'header-moving-text';
+    word.textContent = element.textContent;
+    clip.append(word);
+    element.replaceChildren(clip);
+  };
+  const prepare = () => {
+    top.classList.add('header-motion');
+    const title = top.querySelector('.slide-headline');
+    const text = title.textContent;
+    title.setAttribute('aria-label', text);
+    title.replaceChildren(...text.split(' ').flatMap((word, i) => {
+      const clip = document.createElement('span');
+      clip.className = 'header-text-mask';
+      clip.setAttribute('aria-hidden', 'true');
+      const item = document.createElement('span');
+      item.className = 'header-moving-text';
+      item.textContent = word;
+      clip.append(item);
+      return i ? [document.createTextNode(' '), clip] : [clip];
+    }));
+    top.querySelectorAll('.service-pill').forEach(wrap);
+    if (oldPart !== newPart) wrap(top.querySelector('.act-badge > span'));
+  };
+  prepare();
+  const oldAct = top.querySelector('.act-badge').getBoundingClientRect();
+  const oldPills = [...top.querySelectorAll('.service-pill')].map(pill => pill.getBoundingClientRect());
+  const changingText = () => top.querySelectorAll('.section-step > span, .story-act-label, .act-badge > span .header-moving-text');
+  return {
+    exit(timeline) {
+      timeline.to(top.querySelectorAll('.slide-headline .header-moving-text'), { yPercent: -115, duration: .22, stagger: .015, ease: 'power2.in' }, 0)
+        .to(changingText(), { yPercent: -115, duration: .24, ease: 'power2.in' }, .02)
+        .to(top.querySelectorAll('.service-pill .header-moving-text'), { yPercent: -115, duration: .22, stagger: .025, ease: 'power2.in' }, 0);
+    },
+    mount() {
+      const destination = root.querySelector('.editorial-top-section');
+      finalMarkup = destination.innerHTML;
+      top.innerHTML = finalMarkup;
+      destination.replaceWith(top);
+      prepare();
+      gsap.set(top.querySelectorAll('.header-moving-text'), { yPercent: 115 });
+      gsap.set(changingText(), { yPercent: 115 });
+      const act = top.querySelector('.act-badge');
+      const actEnd = act.getBoundingClientRect();
+      gsap.set(act, { x: oldAct.left - actEnd.left, y: oldAct.top - actEnd.top });
+      top.querySelectorAll('.service-pill').forEach((pill, i) => {
+        const end = pill.getBoundingClientRect();
+        const start = oldPills[i];
+        const ratio = start.width / end.width;
+        gsap.set(pill, { x: start.left - end.left, y: start.top - end.top, scaleX: ratio, transformOrigin: 'left top' });
+        // Counter-scale the text while its pill frame changes width.
+        gsap.set(pill.firstElementChild, { scaleX: 1 / ratio, transformOrigin: 'left top' });
+      });
+    },
+    reveal(timeline) {
+      timeline.to(changingText(), { yPercent: 0, duration: .5, stagger: .035, ease: 'power3.out' }, .02)
+        .to(top.querySelector('.act-badge'), { x: 0, y: 0, duration: .6, ease: 'power3.inOut' }, 0)
+        .to(top.querySelectorAll('.slide-headline .header-moving-text'), { yPercent: 0, duration: .6, stagger: .035, ease: 'power3.out' }, slide.id === 10 ? .45 : .06)
+        .to(top.querySelectorAll('.service-pill'), { x: 0, y: 0, scaleX: 1, duration: .6, stagger: .035, ease: 'power3.inOut' }, .08)
+        .to(top.querySelectorAll('.service-pill > .header-text-mask'), { scaleX: 1, duration: .6, stagger: .035, ease: 'power3.inOut' }, .08)
+        .to(top.querySelectorAll('.service-pill .header-moving-text'), { yPercent: 0, duration: .5, stagger: .055, ease: 'power3.out' }, .3);
+    },
+    finish() {
+      if (finalMarkup) top.innerHTML = finalMarkup;
+      top.classList.remove('header-motion');
+    },
+  };
+}
 
 class PresentationApp {
   constructor() {
@@ -76,6 +155,12 @@ class PresentationApp {
           </div>
         </div>
         <div class="footer-right">
+          <label class="slide-jump">
+            <span class="font-mono">Jump to</span>
+            <select id="slideJump" aria-label="Jump to slide without animation">
+              ${this.slides.map((slide, index) => `<option value="${index}">${String(slide.id).padStart(2, '0')} · ${slide.title}</option>`).join('')}
+            </select>
+          </label>
           <button class="nav-btn" id="btnPrev" title="Previous Slide (←)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M15 18l-6-6 6-6"/>
@@ -135,12 +220,13 @@ class PresentationApp {
   bindEvents() {
     // Keyboard navigation
     window.addEventListener('keydown', (e) => {
+      if (e.target.closest?.('.slide-jump')) return;
       if (this.isWaitingToStart) {
         if (e.key.toLowerCase() === 'f') this.toggleFullscreen();
         return; // Let the native Start button handle Enter and Space.
       }
       if (this.drawerEl.classList.contains('active')) {
-        if ([2, 3, 4, 5].includes(this.slides[this.currentIndex].id) && e.key === 'Tab') {
+        if (e.key === 'Tab') {
           e.preventDefault();
           const close = document.getElementById('drawerCloseBtn');
           const reading = this.drawerEl.querySelector('.drawer-body');
@@ -171,6 +257,8 @@ class PresentationApp {
 
     window.addEventListener('resize', () => this.positionAwsLogo(this.slides[this.currentIndex], false));
 
+    document.getElementById('slideJump').addEventListener('change', e => this.jumpToSlide(Number(e.target.value)));
+
     // Buttons
     document.getElementById('btnNext').addEventListener('click', () => this.nextSlide());
     document.getElementById('btnPrev').addEventListener('click', () => this.prevSlide());
@@ -188,7 +276,19 @@ class PresentationApp {
     });
   }
 
-  goToSlide(index, animate = true) {
+  jumpToSlide(index) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.slides.length) return;
+    // Finish carried elements before replacing their DOM, even mid-transition.
+    gsap.killTweensOf(this.stageEl);
+    this.slideCleanup?.();
+    this.slideCleanup = null;
+    gsap.killTweensOf(this.stageEl.querySelectorAll('*'));
+    gsap.set(this.stageEl, { opacity: 1, y: 0 });
+    this.isAnimating = false;
+    this.goToSlide(index, false, true);
+  }
+
+  goToSlide(index, animate = true, skipEntrance = false) {
     if (index < 0 || index >= this.slides.length || this.isAnimating) return;
     this.isWaitingToStart = false;
     this.appEl.classList.remove('is-waiting');
@@ -196,6 +296,7 @@ class PresentationApp {
 
     const storyTransition = animate && this.currentIndex === 1 && index === 2 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const eventTransition = animate && this.currentIndex === 2 && index === 3 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const taskTransition = animate && ((this.currentIndex === 4 && index === 5) || (this.currentIndex === 5 && index === 6) || (this.currentIndex === 6 && index === 7) || (this.currentIndex === 7 && index === 8) || (this.currentIndex === 8 && index === 9) || (this.currentIndex === 9 && index === 10) || (this.currentIndex === 10 && index === 11)) && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const routingTransition = animate && this.currentIndex === 3 && index === 4 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const logoFirst = animate && this.currentIndex === 0 && index === 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (logoFirst) {
@@ -209,6 +310,7 @@ class PresentationApp {
       source.style.visibility = 'hidden';
     }
     this.currentIndex = index;
+    document.getElementById('slideJump').value = String(index);
     const slide = this.slides[index];
 
     // Update UI Indicators
@@ -218,6 +320,11 @@ class PresentationApp {
 
     // Render Slide Template
     const slideHtml = this.generateSlideHtml(slide);
+
+    if (taskTransition) {
+      this.transitionToTask(slide, slideHtml);
+      return;
+    }
 
     if (routingTransition) {
       this.transitionToRouting(slide, slideHtml);
@@ -266,7 +373,7 @@ class PresentationApp {
     } else {
       this.slideCleanup?.();
       this.stageEl.innerHTML = slideHtml;
-      this.postRenderSlide(slide);
+      this.postRenderSlide(slide, !skipEntrance);
       this.isAnimating = false;
     }
   }
@@ -284,22 +391,22 @@ class PresentationApp {
 
     // Shared editorial layout: narrative beside the architecture graph.
     return `
-      <div class="slide-editorial-layout${[2, 3, 4, 5].includes(slide.id) ? ' slide-context' : ''}" lang="en">
+      <div class="slide-editorial-layout${slide.id >= 2 ? ' slide-context' : ''}${slide.id >= 7 ? ' slide-content-review' : ''}${slide.id === 6 ? ' slide-lambda-task' : ''}${slide.id === 8 ? ' slide-compute-choices' : ''}${slide.id === 10 ? ' slide-notifications' : ''}${slide.id === 11 ? ' slide-access' : ''}${slide.id === 12 ? ' slide-task-access' : ''}" lang="en">
         <!-- Left Editorial Column -->
         <div class="col-editorial">
           <div class="editorial-top-section">
             <div class="editorial-header">
-              <span class="section-indicator font-mono">— ${[2, 3, 4, 5].includes(slide.id) ? `SECTION <span class="section-step"><span>${String(slide.id).padStart(2, '0')}</span></span>` : slide.section}</span>
-              <span class="act-badge font-mono">${[2, 3, 4, 5].includes(slide.id) ? `<span>PART I:</span><span class="story-word-mask"><span class="story-act-label">${slide.act.replace('PART I: ', '')}</span></span>` : slide.act}</span>
+              <span class="section-indicator font-mono">— ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? `SECTION <span class="section-step"><span>${String(slide.id).padStart(2, '0')}</span></span>` : slide.section}</span>
+              <span class="act-badge font-mono">${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? `<span>${slide.act.split(':')[0]}:</span><span class="story-word-mask"><span class="story-act-label">${slide.act.replace(/^PART I{1,3}: /, '')}</span></span>` : slide.act}</span>
             </div>
-            ${[2, 3, 4, 5].includes(slide.id) ? '<div class="headline-reveal-mask">' : ''}<h2 class="slide-headline font-serif">${slide.title}</h2>${[2, 3, 4, 5].includes(slide.id) ? '</div>' : ''}
+            ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? '<div class="headline-reveal-mask">' : ''}<h2 class="slide-headline font-serif">${slide.title}</h2>${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? '</div>' : ''}
             
             <div class="pills-row">
               ${(slide.pills || []).map(pill => `<span class="service-pill">${pill}</span>`).join('')}
             </div>
           </div>
           <div class="editorial-body-section">
-            ${[2, 3, 4, 5].includes(slide.id) ? `<div class="slide-narrative">${slide.summary.split('\n').map(text => `<p>${text}</p>`).join('')}</div>` : `<p class="slide-narrative">${slide.summary}</p>`}
+            ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? `<div class="slide-narrative">${slide.summary.split('\n').map(text => `<p>${text}</p>`).join('')}</div>` : `<p class="slide-narrative">${slide.summary}</p>`}
             <div class="bullet-points-container">
               ${(slide.points || []).map(pt => {
                 if (typeof pt === 'object' && pt !== null && pt.statement) {
@@ -415,7 +522,7 @@ class PresentationApp {
       const headerEnd = newHeader.getBoundingClientRect();
       const pillsEnd = newPills.getBoundingClientRect();
       header.querySelector('.section-step > span').textContent = '03';
-      header.querySelector('.story-act-label').textContent = slide.act.replace('PART I: ', '');
+      header.querySelector('.story-act-label').textContent = slide.act.replace(/^PART I{1,3}: /, '');
       changingPills.forEach((pill, i) => { pill.querySelector('.story-word').textContent = slide.pills[i]; });
       newHeader.replaceWith(header);
       newPills.replaceWith(pills);
@@ -477,6 +584,7 @@ class PresentationApp {
   transitionToEvents(slide, slideHtml) {
     const root = this.stageEl;
     this.slideCleanup?.();
+    const headerMotion = createEditorialHeaderMotion(root, slide);
     const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     overlay.setAttribute('class', 'story-cloud-carry service-graph graph-context');
     overlay.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
@@ -504,6 +612,7 @@ class PresentationApp {
     const finish = () => {
       if (finished) return;
       finished = true;
+      headerMotion.finish();
       destinations.forEach(destination => { destination.style.visibility = ''; });
       if (destinations[0]?.isConnected) {
         cloud.setAttribute('transform', destinations[0].getAttribute('transform'));
@@ -517,10 +626,13 @@ class PresentationApp {
       this.isAnimating = false;
     };
     const settle = () => { exit.progress(1); reveal?.progress(1); };
-    const exit = gsap.timeline().to(root.querySelectorAll('.editorial-header, .pills-row, .slide-headline, .editorial-body-section, .editorial-footer, .diagram-container'), {
+    const exit = gsap.timeline();
+    headerMotion.exit(exit);
+    exit.to(root.querySelectorAll('.editorial-body-section, .editorial-footer, .diagram-container'), {
       opacity: 0, y: -8, duration: .3, ease: 'power2.in',
-    }).add(() => {
+    }, 0).add(() => {
       root.innerHTML = slideHtml;
+      headerMotion.mount();
       this.positionAwsLogo(slide, false);
       const select = selector => root.querySelectorAll(selector);
       const allNodes = [...select('.graph-node')];
@@ -528,17 +640,16 @@ class PresentationApp {
       destinations = [root.querySelector('.aws-cloud-boundary'), ...allNodes.slice(0, 6)];
       const poses = destinations.map(destination => destination.getScreenCTM());
       destinations.forEach(destination => { destination.style.visibility = 'hidden'; });
-      gsap.set(select('.editorial-header, .pills-row, .slide-narrative, .point-row, .graph-context-note, .editorial-footer'), { opacity: 0, y: 12 });
-      gsap.set(select('.slide-headline'), { yPercent: 110 });
+      gsap.set(select('.slide-narrative, .point-row, .graph-context-note'), { opacity: 0, y: 12 });
+      gsap.set(select('.editorial-footer'), { opacity: 0 });
       gsap.set([...links, ...allNodes.slice(6), ...select('.graph-group-label, .comparison-note')], { opacity: 0 });
       reveal = gsap.timeline({ onComplete: finish });
+      headerMotion.reveal(reveal);
       carried.forEach(({ group }, index) => {
         const end = poses[index];
         reveal.to(group, { attr: { transform: `translate(${end.e} ${end.f}) scale(${end.a})` }, duration: 1.1, ease: 'power3.inOut' }, index === 0 ? 0 : .08);
       });
-      reveal.to(select('.editorial-header, .pills-row'), { opacity: 1, y: 0, duration: .5, stagger: .08 }, .05)
-        .to(select('.slide-headline'), { yPercent: 0, duration: .7, ease: 'power3.out' }, .1)
-        .to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .5 }, .25)
+      reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .5 }, .25)
         .to(select('.point-row'), { opacity: 1, y: 0, duration: .5, stagger: .3 }, .5)
         .to([...links.slice(0, 5), select('.graph-group-label')[0]], { opacity: 1, duration: .4 }, .95)
         .to(allNodes[6], { opacity: 1, duration: .6, ease: 'power3.out' }, 1.1)
@@ -551,12 +662,13 @@ class PresentationApp {
     });
     reduced.addEventListener('change', settle);
     window.addEventListener('resize', settle);
-    this.slideCleanup = () => { exit.kill(); reveal?.kill(); finish(); };
+    this.slideCleanup = () => { settle(); exit.kill(); reveal?.kill(); finish(); };
   }
 
   transitionToRouting(slide, slideHtml) {
     const root = this.stageEl;
     this.slideCleanup?.();
+    const headerMotion = createEditorialHeaderMotion(root, slide);
     const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     overlay.setAttribute('class', 'story-cloud-carry service-graph graph-context');
     overlay.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
@@ -587,6 +699,7 @@ class PresentationApp {
     const finish = () => {
       if (finished) return;
       finished = true;
+      headerMotion.finish();
       destinations.forEach((destination, i) => {
         const element = carried[i].element;
         // Restore the real carried nodes with the destination's text and access data.
@@ -596,7 +709,7 @@ class PresentationApp {
         element.innerHTML = destination.innerHTML;
         destination.replaceWith(element);
       });
-      gsap.set(root.querySelectorAll('.editorial-header, .pills-row, .slide-headline, .slide-narrative, .point-row, .graph-context-note, .editorial-footer, .routing-event, .routing-rule, .graph-link, .comparison-note, .graph-group-label'), { clearProps: 'all' });
+      gsap.set(root.querySelectorAll('.slide-narrative, .point-row, .graph-context-note, .editorial-footer, .routing-event, .routing-rule, .graph-link, .comparison-note, .graph-group-label'), { clearProps: 'all' });
       overlay.remove();
       root.inert = false;
       root.classList.remove('is-revealing');
@@ -605,10 +718,13 @@ class PresentationApp {
       this.isAnimating = false;
     };
     const settle = () => { exit.progress(1); reveal?.progress(1); };
-    const exit = gsap.timeline().to(root.querySelectorAll('.editorial-header, .pills-row, .slide-headline, .editorial-body-section, .editorial-footer, .diagram-container'), {
+    const exit = gsap.timeline();
+    headerMotion.exit(exit);
+    exit.to(root.querySelectorAll('.editorial-body-section, .editorial-footer, .diagram-container'), {
       opacity: 0, y: -8, duration: .25, ease: 'power2.in',
-    }).add(() => {
+    }, 0).add(() => {
       root.innerHTML = slideHtml;
+      headerMotion.mount();
       this.positionAwsLogo(slide, false);
       const select = selector => root.querySelectorAll(selector);
       destinations = selectors.map(selector => root.querySelector(selector));
@@ -616,12 +732,12 @@ class PresentationApp {
       destinations.forEach(node => { node.style.visibility = 'hidden'; });
       const links = [...select('.graph-link')];
       const rules = [...select('.routing-rule')];
-      gsap.set(select('.editorial-header, .pills-row, .slide-narrative, .point-row, .graph-context-note'), { opacity: 0, y: 12 });
+      gsap.set(select('.slide-narrative, .point-row, .graph-context-note'), { opacity: 0, y: 12 });
       gsap.set(select('.editorial-footer'), { opacity: 0 });
-      gsap.set(select('.slide-headline'), { yPercent: 110 });
       gsap.set(select('.routing-event, .routing-rule'), { opacity: 0, x: -14 });
       gsap.set(select('.graph-link, .graph-group-label, .comparison-note'), { opacity: 0 });
       reveal = gsap.timeline({ onComplete: finish });
+      headerMotion.reveal(reveal);
       carried.forEach(({group}, i) => {
         const pose = poses[i];
         reveal.to(group, { attr: { transform: `translate(${pose.e} ${pose.f}) scale(${pose.a})` }, duration: 1, ease: 'power3.inOut' }, 0);
@@ -629,8 +745,6 @@ class PresentationApp {
       const cloudRect = destinations[0].querySelector('rect');
       reveal.to(carried[0].element.querySelector('rect'), { attr: { width: cloudRect.getAttribute('width'), height: cloudRect.getAttribute('height') }, duration: 1, ease: 'power3.inOut' }, 0)
         .to(carried.slice(3).map(item => item.group), { opacity: .3, duration: .25 }, 0)
-        .to(select('.editorial-header, .pills-row'), { opacity: 1, y: 0, duration: .4, stagger: .05 }, .05)
-        .to(select('.slide-headline'), { yPercent: 0, duration: .6, ease: 'power3.out' }, .1)
         .to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .2)
         .add(() => carried.slice(1).forEach(({element}, i) => {
           element.querySelector('.graph-node-caption').textContent = destinations[i + 1].querySelector('.graph-node-caption').textContent;
@@ -649,7 +763,236 @@ class PresentationApp {
     });
     reduced.addEventListener('change', settle);
     window.addEventListener('resize', settle);
-    this.slideCleanup = () => { exit.kill(); reveal?.kill(); finish(); };
+    this.slideCleanup = () => { settle(); exit.kill(); reveal?.kill(); finish(); };
+  }
+
+  transitionToTask(slide, slideHtml) {
+    const api = slide.id === 7;
+    const compute = slide.id === 8;
+    const queue = slide.id === 9;
+    const notifications = slide.id === 10;
+    const access = slide.id === 11;
+    const taskAccess = slide.id === 12;
+    const root = this.stageEl;
+    this.slideCleanup?.();
+    const headerMotion = createEditorialHeaderMotion(root, slide);
+    const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    overlay.setAttribute('class', 'story-cloud-carry service-graph graph-context');
+    overlay.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.inert = true;
+    document.body.append(overlay);
+    const oldColumn = root.querySelector('.col-editorial').getBoundingClientRect();
+    const divider = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    divider.setAttribute('class', 'story-column-divider');
+    divider.setAttribute('x1', oldColumn.right - .5);
+    divider.setAttribute('x2', oldColumn.right - .5);
+    divider.setAttribute('y1', oldColumn.top);
+    divider.setAttribute('y2', oldColumn.bottom);
+    overlay.append(divider);
+    root.classList.add('is-moving-divider');
+    const selectors = access ? ['.aws-cloud-boundary', '[data-node="stepfunctions"]', '[data-node="mobile"]'] : queue ? ['.aws-cloud-boundary', '[data-node="lambda"]'] : (compute || notifications || taskAccess) ? ['.aws-cloud-boundary'] : api ? ['.aws-cloud-boundary', '[data-inspector="dynamodb"]'] : ['.aws-cloud-boundary', '[data-inspector="eventbridge"]',
+      '[data-inspector="order-event"]', '[data-inspector="plan-delivery"]'];
+    const carried = selectors.map(selector => {
+      const element = root.querySelector(selector);
+      const pose = element.getScreenCTM();
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      overlay.append(group);
+      group.append(element);
+      element.removeAttribute('transform');
+      element.setAttribute('tabindex', '-1');
+      group.setAttribute('transform', `translate(${pose.e} ${pose.f}) scale(${pose.a})`);
+      return { element, group };
+    });
+    root.inert = true;
+    root.classList.add('is-revealing');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let destinations = [];
+    let reveal;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      headerMotion.finish();
+      destinations.forEach((destination, i) => {
+        const element = carried[i].element;
+        [...element.attributes].forEach(attr => element.removeAttribute(attr.name));
+        [...destination.attributes].forEach(attr => element.setAttribute(attr.name, attr.value));
+        element.style.visibility = '';
+        element.innerHTML = destination.innerHTML;
+        destination.replaceWith(element);
+      });
+      gsap.set(root.querySelectorAll('.slide-narrative, .point-row, .graph-context-note, .editorial-footer, .graph-link, .comparison-note, .graph-group-label, .delivery-output, .delivery-lookup'), { clearProps: 'all' });
+      if (api || compute || queue || notifications || access || taskAccess) gsap.set(root.querySelectorAll('.graph-node'), { clearProps: 'opacity' });
+      if (taskAccess) gsap.set(root.querySelectorAll('.permission-panel, .permission-panel text, [data-node="iam"] > image, [data-node="iam"] > text, .graph-context-note > *, .editorial-footer > span'), { clearProps: 'all' });
+      overlay.remove();
+      root.classList.remove('is-moving-divider');
+      root.inert = false;
+      root.classList.remove('is-revealing');
+      reduced.removeEventListener('change', settle);
+      window.removeEventListener('resize', settle);
+      this.isAnimating = false;
+    };
+    // Settle both phases, including a resize before the new DOM is rendered.
+    const settle = () => { exit.progress(1); reveal?.progress(1); };
+    const exit = gsap.timeline();
+    headerMotion.exit(exit);
+    exit.to(root.querySelectorAll('.editorial-body-section, .editorial-footer, .diagram-container'), { opacity: 0, duration: .24, ease: 'power2.in' }, 0)
+      .add(() => {
+        root.innerHTML = slideHtml;
+        headerMotion.mount();
+        this.positionAwsLogo(slide, false);
+        const select = selector => root.querySelectorAll(selector);
+        destinations = selectors.map(selector => root.querySelector(selector));
+        const poses = destinations.map(node => node.getScreenCTM());
+        destinations.forEach(node => { node.style.visibility = 'hidden'; });
+        gsap.set(select('.slide-narrative, .point-row'), { opacity: 0, y: 12 });
+        gsap.set(select('.graph-link, .comparison-note, .graph-group-label, .delivery-output, .delivery-lookup, .graph-context-note, .editorial-footer'), { opacity: 0 });
+        reveal = gsap.timeline({ onComplete: finish });
+        headerMotion.reveal(reveal);
+        const column = root.querySelector('.col-editorial').getBoundingClientRect();
+        // Carry the border with the diagram; keep the destination layout stable.
+        reveal.to(divider, { attr: { x1: column.right - .5, x2: column.right - .5,
+          y1: column.top, y2: column.bottom }, duration: .95, ease: 'power3.inOut' }, 0);
+        carried.forEach(({ group }, i) => {
+          const pose = poses[i];
+          reveal.to(group, { attr: { transform: `translate(${pose.e} ${pose.f}) scale(${pose.a})` }, duration: .95, ease: 'power3.inOut' }, 0);
+        });
+        const cloudRect = destinations[0].querySelector('rect');
+        reveal.to(carried[0].element.querySelector('rect'), { attr: {
+          width: cloudRect.getAttribute('width'), height: cloudRect.getAttribute('height')
+        }, duration: .95, ease: 'power3.inOut' }, 0);
+        if (access) {
+          // Carry the phone shape too; change its labels to explain the new role.
+          const caption = carried[1].element.querySelector('.graph-node-caption');
+          const nextCaption = destinations[1].querySelector('.graph-node-caption').textContent;
+          const phoneLabels = carried[2].element.querySelectorAll('text');
+          const nextPhoneLabels = destinations[2].querySelectorAll('text');
+          gsap.set(select('.graph-node:not([data-node="stepfunctions"]):not([data-node="mobile"])'), { opacity: 0 });
+          reveal.to(caption, { opacity: 0, duration: .18 }, 0)
+            .add(() => { caption.textContent = nextCaption; }, .2)
+            .to(caption, { opacity: 1, duration: .3 }, .6)
+            .to(phoneLabels, { opacity: 0, duration: .18 }, 0)
+            .add(() => phoneLabels.forEach((label, i) => {
+              if (nextPhoneLabels[i]) label.textContent = nextPhoneLabels[i].textContent;
+              else label.remove();
+            }), .2)
+            .to(phoneLabels[0], { opacity: 1, duration: .3 }, .6)
+            .to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .09 }, .3)
+            .to(select('.graph-node:not([data-node="stepfunctions"]):not([data-node="mobile"])'), { opacity: 1, duration: .4, stagger: .08, ease: 'power3.out' }, .35)
+            .to(select('.graph-group-label'), { opacity: 1, duration: .35, stagger: .1 }, .45)
+            .to(select('.graph-link'), { opacity: 1, duration: .35, stagger: .09 }, .65)
+            .to(select('.comparison-note, .graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1);
+          return;
+        }
+        if (taskAccess) {
+          const panels = select('.permission-panel');
+          const contextText = select('.graph-context-note > *, .editorial-footer > span');
+          const roleParts = select('[data-node="iam"] > image, [data-node="iam"] > text');
+          const runtimeNote = select('.comparison-note:not(.task-permissions)');
+          // Reveal the policy frames first, then their contents in reading order.
+          gsap.set(select('.graph-node:not([data-node="iam"])'), { opacity: 0 });
+          gsap.set(select('.task-permissions, .graph-context-note, .editorial-footer'), { opacity: 1 });
+          gsap.set(panels, { clipPath: 'inset(0 100% 0 0)' });
+          gsap.set(select('.permission-panel text'), { y: 10, opacity: 0 });
+          gsap.set(contextText, { clipPath: 'inset(0 0 100% 0)', y: 12 });
+          gsap.set(roleParts, { y: 12, opacity: 0 });
+          gsap.set(runtimeNote, { opacity: 1, clipPath: 'inset(0 100% 0 0)' });
+          reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .1 }, .3)
+            .to(select('.graph-node:not([data-node="iam"])'), { opacity: 1, duration: .4, stagger: .08, ease: 'power3.out' }, .4)
+            .to(select('.graph-group-label'), { opacity: 1, duration: .35 }, .45)
+            .to(select('.graph-link'), { opacity: 1, duration: .35, stagger: .08 }, .75)
+            .to(panels, { clipPath: 'inset(0 0% 0 0)', duration: .55, stagger: .16, ease: 'power3.inOut' }, .65)
+            .to(panels[0].querySelectorAll('text'), { y: 0, opacity: 1, duration: .4, stagger: .06, ease: 'power3.out' }, .88)
+            .to(roleParts, { y: 0, opacity: 1, duration: .45, stagger: .04, ease: 'power3.out' }, 1.04)
+            .to(panels[1].querySelectorAll('text'), { y: 0, opacity: 1, duration: .4, stagger: .06, ease: 'power3.out' }, 1.08)
+            .to(contextText, { clipPath: 'inset(0 0 0% 0)', y: 0, duration: .5, stagger: .07, ease: 'power3.out' }, .82)
+            .to(runtimeNote, { clipPath: 'inset(0 0% 0 0)', duration: .5, ease: 'power3.inOut' }, 1.24);
+          return;
+        }
+        if (notifications) {
+          // These views share only the cloud; new services enter after the old ones fade.
+          gsap.set(select('.graph-node'), { opacity: 0 });
+          reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .1 }, .3)
+            .to(select('.graph-node'), { opacity: 1, duration: .4, stagger: .08, ease: 'power3.out' }, .4)
+            .to(select('.graph-group-label'), { opacity: 1, duration: .35, stagger: .06 }, .45)
+            .to(select('.graph-link'), { opacity: 1, duration: .35, stagger: .08 }, .75)
+            .to(select('.comparison-note, .graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1);
+          return;
+        }
+        if (queue) {
+          // Keep the Lambda service icon; roll its task label from Check order to Plan delivery.
+          const labels = carried[1].element.querySelectorAll('text');
+          const targetLabels = destinations[1].querySelectorAll('text');
+          gsap.set(select('.graph-node:not([data-node="lambda"])'), { opacity: 0 });
+          reveal.to(labels, { opacity: 0, duration: .18 }, 0)
+            .add(() => labels.forEach((label, i) => { label.textContent = targetLabels[i].textContent; }), .2)
+            .to(labels, { opacity: 1, duration: .3 }, .65)
+            .to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .08 }, .35)
+            .to(select('.graph-node:not([data-node="lambda"])'), { opacity: 1, duration: .4, stagger: .08 }, .45)
+            .to(select('.graph-group-label, .comparison-note'), { opacity: 1, duration: .4, stagger: .035 }, .55)
+            .to(select('.graph-link'), { opacity: 1, duration: .4, stagger: .08 }, .8)
+            .to(select('.graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1);
+          return;
+        }
+        if (compute) {
+          // No service is shared with slide 7; carry its cloud, then reveal each compute choice.
+          gsap.set(select('.graph-node'), { opacity: 0 });
+          reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .18)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .28 }, .45)
+            .to(select('.graph-node'), { opacity: 1, duration: .5, stagger: .16, ease: 'power2.out' }, .45)
+            .to(select('.graph-group-label'), { opacity: 1, duration: .4, stagger: .12 }, .6)
+            .to(select('.comparison-note'), { opacity: 1, duration: .4, stagger: .065 }, .6)
+            .to(select('.graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1.35);
+          return;
+        }
+        if (api) {
+          // Carry the cloud and order database; fade in the new request path.
+          gsap.set(select('.graph-node:not([data-inspector="dynamodb"])'), { opacity: 0 });
+          reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .18)
+            .to(select('.graph-node:not([data-inspector="dynamodb"])'), { opacity: 1, duration: .5, stagger: .12, ease: 'power3.out' }, .55)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .2 }, .5)
+            .to(select('.graph-link'), { opacity: 1, duration: .4, stagger: .18 }, .85)
+            .to(select('.graph-group-label'), { opacity: 1, duration: .4, stagger: .12 }, 1.05)
+            .to(select('.comparison-note'), { opacity: 1, duration: .4, stagger: .12 }, 1.2)
+            .to(select('.graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1.5);
+          return;
+        }
+        const eventText = [...carried[2].element.querySelectorAll('text')];
+        const eventSummary = [...destinations[2].querySelectorAll('text')];
+        reveal.to(eventText, { opacity: 0, duration: .2 }, .15)
+          .add(() => {
+            eventText.forEach((text, i) => {
+              if (!eventSummary[i]) { text.remove(); return; }
+              text.textContent = eventSummary[i].textContent;
+              [...eventSummary[i].attributes].forEach(attr => text.setAttribute(attr.name, attr.value));
+            });
+          }, .4)
+          .to(eventText.slice(0, eventSummary.length), { opacity: 1, duration: .35 }, .45);
+        const lambda = carried[3].element;
+        reveal.to(lambda.querySelector('image'), { attr: { x: -48, y: -48, width: 96, height: 96 }, duration: .95, ease: 'power3.inOut' }, 0)
+          .to(lambda.querySelector('.graph-node-label'), { attr: { y: 73 }, duration: .95, ease: 'power3.inOut' }, 0)
+          .to(lambda.querySelector('.graph-node-caption'), { attr: { y: 93 }, duration: .95, ease: 'power3.inOut' }, 0)
+          .to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .2)
+          .add(() => { carried[1].element.querySelector('.graph-node-caption').textContent = 'Delivery rule matched'; }, .45)
+          .to(select('.point-row')[0], { opacity: 1, y: 0, duration: .4 }, .55)
+          .to(select('.graph-group-label')[0], { opacity: 1, duration: .3 }, .55)
+          .to(select('.graph-link.event'), { opacity: 1, duration: .35, stagger: .2 }, .55)
+          .to(select('.delivery-lookup'), { opacity: 1, duration: .4 }, 1)
+          .to(select('.point-row')[1], { opacity: 1, y: 0, duration: .4 }, 1)
+          .to(select('.graph-group-label')[1], { opacity: 1, duration: .3 }, 1)
+          .to(select('.comparison-note'), { opacity: 1, duration: .35, stagger: .1 }, 1)
+          .to(select('.point-row')[2], { opacity: 1, y: 0, duration: .4 }, 1.45)
+          .to(select('.graph-link:not(.event), .delivery-output'), { opacity: 1, duration: .4, stagger: .15 }, 1.45)
+          .to(select('.graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1.85);
+      });
+    reduced.addEventListener('change', settle);
+    window.addEventListener('resize', settle);
+    this.slideCleanup = () => { settle(); exit.kill(); reveal?.kill(); finish(); };
   }
 
   positionAwsLogo(slide, animate = true) {
@@ -698,9 +1041,9 @@ class PresentationApp {
     };
   }
 
-  postRenderSlide(slide) {
-    this.positionAwsLogo(slide);
-    this.slideCleanup = animateSlideDiagram(slide.id, { startLogoRect: this.pendingStartLogoRect });
+  postRenderSlide(slide, animate = true) {
+    this.positionAwsLogo(slide, animate);
+    this.slideCleanup = animateSlideDiagram(slide.id, { startLogoRect: this.pendingStartLogoRect, skipAnimation: !animate });
     this.pendingStartLogoRect = null;
   }
 
@@ -718,7 +1061,7 @@ class PresentationApp {
 
   openInspector(nodeId, trigger) {
     const slideId = this.slides[this.currentIndex].id;
-    const overview = (slideId === 2 ? SLIDE_2_INSPECTORS : slideId === 3 ? SLIDE_3_INSPECTORS : slideId === 4 ? SLIDE_4_INSPECTORS : slideId === 5 ? SLIDE_5_INSPECTORS : {})[trigger?.dataset.inspector || nodeId];
+    const overview = SLIDE_INSPECTORS[slideId]?.[trigger?.dataset.inspector || nodeId];
     const data = INSPECTOR_DATA[nodeId];
     if (!data && !overview) return;
     document.getElementById('drawerCategory').textContent = overview ? `Slide ${slideId} • How it works` : data.category;
@@ -746,7 +1089,7 @@ class PresentationApp {
     document.getElementById('drawerCodeContent').textContent = data?.code || '';
     this.inspectorTrigger = trigger || this.stageEl.querySelector(`.graph-node[data-node="${nodeId}"]`) || document.activeElement;
 
-    if ([2, 3, 4, 5].includes(slideId)) {
+    if (overview) {
       this.drawerEl.setAttribute('role', 'dialog');
       this.drawerEl.setAttribute('aria-modal', 'true');
       this.drawerEl.setAttribute('aria-labelledby', 'drawerTitle');

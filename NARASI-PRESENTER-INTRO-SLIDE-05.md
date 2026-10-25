@@ -1,9 +1,9 @@
-# Narasi Presenter — Intro sampai Slide 5
+# Narasi Presenter — Intro sampai Slide 12
 
 **Presenter:** Rayina Ilham  
 **Topik:** Designing a Serverless Architecture with Event-Driven Microservices  
 **Bahasa narasi:** Indonesia  
-**Perkiraan durasi:** 6–8 menit, bergantung jeda dan penunjukan diagram.
+**Perkiraan durasi:** 20–25 menit, bergantung tempo bicara, jeda, dan penunjukan diagram.
 
 Teks narasi dapat dibacakan langsung. Bagian *arahan visual* dan *catatan akurasi* merupakan pegangan presenter, bukan teks yang harus dibaca.
 
@@ -106,6 +106,144 @@ Lambda penerima ini disebut **target**, yaitu tujuan pengiriman event. Kedua tug
 
 Jadi, satu kabar bisa dipakai beberapa tugas. Step Functions tetap mengatur langkah pesanan; EventBridge memilih penerima kabarnya. Nama event dan syarat di sini hanyalah contoh untuk menjelaskan prinsipnya.
 
+Sekarang kita ikuti salah satu penerimanya: apa yang dilakukan Plan delivery setelah menerima event?
+
+## Slide 6 — What Does Plan Delivery Do?
+
+**Arahan visual:** Ikuti event dari EventBridge ke Lambda, tunjuk bagian handler dan lookup DynamoDB, lalu permintaan ke sistem pengiriman. Bedakan permintaan perencanaan dari hasil pengiriman.
+
+Di slide sebelumnya, rule sudah menentukan penerima event. Sekarang kita perbesar tugas **Plan delivery** untuk melihat pola kerja Lambda: menerima input, menjalankan kode, lalu melakukan pekerjaan.
+
+Pertama, **trigger**, yaitu pemicu function. Rule pengiriman di EventBridge cocok dengan event OrderConfirmed, sehingga EventBridge memanggil Lambda dengan data event tersebut.
+
+Kedua, **handler**, yaitu bagian kode yang menjadi titik masuk saat function dijalankan. Kode ini kita tulis sendiri. Dalam contoh, handler mengambil nomor pesanan **EV-1042**, lalu membaca detail pengiriman dari DynamoDB.
+
+Lambda menyediakan tempat untuk menjalankan kode dan menangani pengelolaan servernya. Lambda tidak otomatis memahami arti pesanan atau menyusun rencana pengiriman; logika bisnis tersebut tetap pekerjaan kita.
+
+Ketiga, kode mengirim permintaan agar sistem pengiriman mulai menyusun rencana. Permintaan berhasil dikirim tidak berarti rencananya sudah selesai, apalagi kendaraannya sudah sampai ke pelanggan.
+
+Pola ini sama dengan demo kursus: gambar diunggah ke S3, Lambda menjalankan kode untuk memperkecil gambar, lalu hasilnya disimpan kembali di S3. Pemicu dan pekerjaannya berbeda, tetapi polanya sama.
+
+Kita sudah melihat pekerjaan setelah pesanan dikonfirmasi. Sekarang kita mundur ke pintu masuk: bagaimana permintaan pesanan pertama kali diterima aplikasi?
+
+## Slide 7 — How Does an Order Enter the App?
+
+**Arahan visual:** Ikuti POST dari aplikasi pembeli → API Gateway → StartExecution. Tunjuk balasan awal, kemudian PutItem dan status RECEIVED. Jangan menyamakan balasan awal dengan keberhasilan penyimpanan.
+
+**API** adalah cara program meminta program lain melakukan pekerjaan. Di sini, aplikasi pembeli mengirim permintaan **HTTPS POST /orders**, beserta detail pesanannya.
+
+Permintaan masuk melalui API Gateway. Kita mengatur pemeriksaan akses dan batas permintaan pada pintu masuk ini. Pemeriksaan akses tidak menggantikan pemeriksaan stok atau pembayaran.
+
+Route REST API kemudian memanggil **StartExecution** pada Step Functions. Artinya, workflow pesanan mulai dijalankan. Balasan awal berisi referensi workflow; aplikasi tidak harus menunggu seluruh proses bisnis selesai.
+
+Salah satu tugas awal workflow menulis data ke DynamoDB lewat **PutItem**. Contohnya, nomor pesanan EV-1042 dengan status **RECEIVED**. Status ini kita tentukan sendiri sebagai penanda bahwa pesanan sudah tersimpan.
+
+Perhatikan dua perbedaan. Workflow sudah dimulai belum tentu data sudah tersimpan, karena penulisan masih bisa berjalan atau gagal. Lalu, RECEIVED belum berarti **CONFIRMED**: pemeriksaan pesanan, stok, dan pembayaran masih perlu dilakukan.
+
+Untuk melihat kemajuan, aplikasi memakai route pemeriksaan status yang terpisah. Route tersebut disembunyikan pada diagram dan tetap harus memeriksa hak akses pembeli.
+
+Kita juga perlu mengatur izin layanan, penanganan kegagalan, dan perlindungan terhadap permintaan berulang agar pesanan tidak dibuat atau dibayar dua kali.
+
+Sejauh ini kita banyak memakai Lambda. Apakah semua pekerjaan harus dijalankan dengan Lambda?
+
+## Slide 8 — Does Every Job Need Lambda?
+
+**Arahan visual:** Baca tiga baris sebagai pilihan: Lambda, ECS dengan Fargate, lalu EC2. Tidak ada panah perpindahan atau tingkatan kematangan di sini.
+
+Jawabannya, tidak. Cara menjalankan kode dipilih berdasarkan kebutuhan pekerjaan, bukan karena satu pilihan selalu lebih maju.
+
+Pertama, **Lambda** cocok untuk tugas yang bereaksi terhadap event, seperti Check order. Untuk eksekusi Lambda standar yang dibahas di sini, batas waktunya sampai lima belas menit per pemanggilan. AWS menangani server dan penskalaannya; tim mengatur kode, izin, dan konfigurasi. Komponen biaya eksekusinya berdasarkan jumlah permintaan dan waktu berjalan.
+
+Kedua, **container** mengemas program beserta dependensinya agar lingkungan menjalankannya konsisten. Ini dapat cocok untuk layanan yang terus berjalan atau pekerjaan yang membutuhkan waktu lebih panjang.
+
+**Amazon Elastic Container Service**, atau **Amazon ECS**, mengatur tugas container. **AWS Fargate** menyediakan compute untuk menjalankannya tanpa kita mengelola server. Jadi, Fargate juga termasuk serverless. ECS juga dapat memakai EC2 sebagai tempat menjalankan container.
+
+Ketiga, **EC2** memberi kendali lebih besar atas sistem operasi, perangkat lunak khusus, dan pengaturan server. Konsekuensinya, pada EC2 yang kita kelola sendiri, tim juga menangani patch sistem operasi, kapasitas, dan penskalaan.
+
+Ketiganya dapat dipadukan. Bandingkan kebutuhan waktu jalan, kendali, dan biaya; instance EC2 serta tugas Fargate yang tetap berjalan masih menimbulkan biaya meskipun sedang tidak mengerjakan transaksi.
+
+Untuk tugas Plan delivery kita tetap memakai Lambda. Lalu, bagaimana kalau pekerjaan pengiriman datang lebih cepat daripada kemampuan memprosesnya?
+
+## Slide 9 — What If Delivery Work Arrives Too Fast?
+
+**Arahan visual:** Tunjuk EventBridge → antrean SQS → Plan delivery. Lalu baca kondisi in progress, success, failure, dan jalur ke dead-letter queue.
+
+Pada slide 6, EventBridge langsung memanggil Plan delivery. Di sini, kita menambahkan **Amazon Simple Queue Service**, atau **Amazon SQS**, sebagai tempat pesan menunggu.
+
+Rule pengiriman masih mencari event yang sama. Bedanya, target rule sekarang adalah antrean SQS. Saat permintaan melonjak, pekerjaan bisa menunggu di antrean sambil kapasitas pemrosesan mengerjakannya.
+
+Lambda membaca antrean melalui konfigurasi penghubung yang disebut **event source mapping**, lalu menjalankan Plan delivery. Jadi, SQS tidak mendorong panggilan langsung ke function; layanan Lambda melakukan polling atau membaca pesan yang tersedia.
+
+Saat pesan sedang diproses, pesan disembunyikan sementara dari pembacaan lain. Jangka waktu ini disebut **visibility timeout**. Setelah pemrosesan berhasil, integrasi Lambda menghapus pesan dari antrean. Jika gagal, pesan dapat tersedia kembali setelah waktu tersebut habis.
+
+Karena pesan bisa diproses lagi, kode harus aman terhadap pengulangan. Contohnya, periksa nomor pesanan agar percobaan ulang tidak membuat permintaan rencana pengiriman yang sama dua kali.
+
+Kita juga mengatur **redrive policy**: pesan yang berulang kali gagal dipindahkan ke **dead-letter queue**, atau **DLQ**. Tim perlu menerima alarm, memeriksa penyebabnya, memperbaiki masalah, lalu memutuskan apakah pesan layak diproses ulang. DLQ tidak memperbaiki kesalahan sendiri.
+
+Antrean Standard dapat mengulang pesan atau mengubah urutannya. FIFO menambah urutan per kelompok pesan dan deduplikasi, tetapi kode tetap perlu aman saat dicoba ulang.
+
+SQS menampung pekerjaan yang menunggu. Bagaimana kalau satu pembaruan perlu dibagikan kepada beberapa penerima?
+
+## Slide 10 — How Can One Update Reach Many People?
+
+**Arahan visual:** Mulai dari workflow → topic SNS, lalu cabang SMS, aplikasi dukungan lewat HTTPS, dan antrean SQS opsional. Antrean ini berbeda dari antrean pengiriman pada slide 9.
+
+Kita kembali ke cabang notifikasi yang diperkenalkan pada slide 2. Layanan yang dipakai adalah **Amazon Simple Notification Service**, atau **Amazon SNS**.
+
+Workflow mengirim satu pembaruan status ke sebuah **topic**, yaitu saluran pesan bernama. Workflow cukup melakukan publish ke topic tersebut, tanpa menghubungi semua penerima satu per satu.
+
+Penerima yang berlangganan disebut **subscriber**. Pada gambar, ada saluran SMS pembeli, aplikasi dukungan melalui HTTPS, serta antrean SQS opsional. Subscription dapat memakai filter untuk memilih pembaruan yang relevan.
+
+SNS mendorong salinan pesan ke setiap subscription yang cocok. Pola membagikan satu pesan ke banyak penerima ini disebut **fan-out**. Setiap penerima memproses salinannya secara mandiri.
+
+Jika salah satu penerima memakai SQS, salinannya bisa menunggu sampai consumer siap. Ini menunjukkan bahwa SNS dan SQS dapat dipakai bersama: SNS membagikan pembaruan, SQS menampung pekerjaan. EventBridge tetap berperan mencocokkan event dengan rules untuk menentukan target.
+
+Pada topic Standard, pesan dapat berulang atau tiba tidak berurutan. Penanganan retry bergantung pada protokol penerima; subscription DLQ perlu dikonfigurasi untuk pesan yang gagal dikirim. Pesan terkirim juga belum membuktikan bahwa pembeli sudah membacanya.
+
+Setelah membahas pembagian kabar, kita beralih ke keamanan. Siapa yang boleh melihat atau mengubah pesanan tersebut?
+
+## Slide 11 — Who May See This Order?
+
+**Arahan visual:** Ikuti aplikasi pembeli → Cognito → token kembali ke aplikasi → API Gateway → workflow. Akhiri pada kotak pemeriksaan pemilik pesanan dalam kode tugas.
+
+Ada dua pertanyaan yang berbeda: siapa orangnya, dan apa yang boleh ia lakukan?
+
+Pertanyaan pertama adalah **authentication**, yaitu pemeriksaan identitas. **Amazon Cognito user pool** menangani proses sign-in dan memberikan token. Aplikasi kemudian mengirim **access token** melalui HTTPS saat memanggil API.
+
+Pertanyaan kedua adalah **authorization**, yaitu pemeriksaan hak akses. Pada contoh REST API ini, kita memakai **Cognito authorizer** di API Gateway untuk memvalidasi token, termasuk tanda tangan dan masa berlakunya. Kita juga mengatur **scope** pada method API untuk memeriksa apakah token mengizinkan tindakan yang diminta.
+
+Namun, token valid dan izin memanggil API belum membuktikan bahwa semua pesanan boleh dilihat oleh pengguna tersebut.
+
+Karena itu ada pemeriksaan ketiga di kode tugas: cocokkan identitas pembeli yang sudah diverifikasi dengan pemilik pesanan. Jika tidak sesuai, tolak akses sebelum data dikembalikan atau diubah. Jangan langsung mempercayai buyer ID dari isi permintaan, karena nilai tersebut bisa diganti oleh pemanggil.
+
+Ini bagian dari **shared responsibility**, atau tanggung jawab bersama. AWS melindungi infrastruktur layanan terkelola; tim kita tetap menjaga kode, data, serta konfigurasi akses. WAF dan pembatasan permintaan dapat menambah perlindungan trafik, tetapi tidak menggantikan pemeriksaan pemilik pesanan.
+
+Token bertanda tangan juga tidak berarti seluruh datanya terenkripsi. Perlindungan koneksi dan penyimpanan data tetap perlu diatur.
+
+Pembeli sudah memiliki identitas dan hak akses. Sekarang bagaimana dengan program Lambda yang bekerja atas pesanan itu?
+
+## Slide 12 — What May Each Task Access?
+
+**Arahan visual:** Tunggu perpindahan cloud dan garis kolom selesai. Tunjuk alur EventBridge → Plan delivery → DynamoDB, lalu panel izin pemanggilan dan panel execution role. Ikon IAM menunjukkan pengaturan izin, bukan langkah pengiriman pesan.
+
+Program juga membutuhkan izin. Untuk membedakannya dari hak akses pembeli, kita kembali ke jalur langsung Plan delivery dari slide 6. Ini pembesaran contoh tersebut, bukan berarti antrean pada slide 9 tiba-tiba dihapus dari semua rancangan.
+
+Ada dua pertanyaan izin yang harus dipisahkan.
+
+Pertama, **siapa yang boleh memanggil function?** Pada contoh ini, kita memasang **resource-based policy**, yaitu kebijakan yang melekat pada function Lambda. Policy tersebut mengizinkan layanan EventBridge, yang ditandai dengan **events.amazonaws.com**, melakukan **lambda:InvokeFunction**.
+
+Izin itu dibatasi lagi menggunakan **aws:SourceArn** agar berasal dari rule pengiriman yang dimaksud. **ARN** adalah pengenal resource AWS. Jadi, kita tidak cukup hanya menyebut nama layanan; sumber pemanggilnya juga perlu dibatasi.
+
+Kedua, **apa yang boleh dilakukan function setelah berjalan?** Lambda memakai **IAM execution role** dengan kredensial sementara. Role adalah identitas dengan izin yang digunakan function saat mengakses layanan AWS lain.
+
+Dalam contoh lookup ini, kode hanya membutuhkan **dynamodb:GetItem** pada tabel Orders untuk membaca detail pesanan. Batasi action dan resource tabelnya; jangan memberi semua izin DynamoDB. Tugas lain sebaiknya memiliki role sendiri sesuai kebutuhannya.
+
+Membaca pesanan tidak membutuhkan izin menghapus pesanan atau melakukan pembayaran. Izin logging dan akses lain yang memang dibutuhkan tetap perlu diatur secara terpisah. Simpan secret di **Secrets Manager** atau **Parameter Store SecureString**, dengan izin akses yang sesuai, bukan di dalam kode.
+
+Prinsipnya disebut **least privilege**: berikan hak akses secukupnya untuk menyelesaikan tugas. VPC dapat menyediakan konektivitas privat, tetapi tidak menggantikan izin IAM. Validasi input, pembaruan dependensi, dan kode yang aman saat dicoba ulang tetap tanggung jawab tim.
+
+Setelah membatasi akses setiap tugas, berikutnya kita kembali ke workflow: apa yang harus terjadi jika salah satu langkah pesanan gagal?
+
 ## Catatan akurasi untuk presenter
 
 - **Fakta materi kursus:** studi kasus startup kendaraan listrik, tim kecil, target peluncuran enam bulan; Step Functions mengatur workflow; Lambda menjalankan kode; EventBridge memakai rules pada event bus untuk mencocokkan event dan mengirimnya ke target.
@@ -113,6 +251,12 @@ Jadi, satu kabar bisa dipakai beberapa tugas. Step Functions tetap mengatur lang
 - **Penyederhanaan graph:** slide 3–4 menyembunyikan DynamoDB dan SNS. Slide 5 juga menyembunyikan API Gateway dan tiga tugas Lambda utama. Step Functions mewakili workflow yang sama; kotak rule memperinci bagian EventBridge, bukan layanan AWS baru.
 - **Batas contoh:** pesanan dikonfirmasi tidak berarti kendaraan sudah dikirim. Pengiriman event dapat gagal atau berulang; penanganannya tetap perlu dirancang. Rules memilih pesan, bukan menjalankan pekerjaan bisnis.
 - **Istilah di slide 5:** label `type` memendekkan istilah *detail type*, yaitu nama jenis event. Nomor pesanan dan status berada dalam bagian detail event. Kotak tersebut bukan format event lengkap.
+- **Slide 6–7:** handler dan sistem perencanaan pengiriman adalah ilustrasi. Mengirim permintaan bukan bukti rencana atau pengiriman selesai. Balasan StartExecution membuktikan workflow dimulai, bukan penulisan DynamoDB berhasil. RECEIVED adalah status bisnis buatan contoh; tugas PutItem menggunakan integrasi langsung dan tidak membutuhkan Lambda perantara hanya untuk menulis data.
+- **Slide 8:** pilihan compute bukan urutan migrasi wajib. Fargate juga serverless; ECS dapat berjalan di Fargate atau EC2. Batas lima belas menit merujuk pada eksekusi Lambda standar yang dibahas. Biaya sistem tidak hanya biaya eksekusi function.
+- **Slide 9:** event source mapping Lambda melakukan polling SQS. Pesan disembunyikan, bukan langsung dihapus saat diterima. Sukses memicu penghapusan; kegagalan dapat memunculkan pesan kembali. DLQ memerlukan redrive policy dan pemantauan. FIFO tidak menghapus kebutuhan kode yang aman terhadap pengulangan.
+- **Slide 10:** contoh memakai topic Standard. Retry bergantung pada protokol; DLQ subscription menangani kegagalan pengiriman, bukan otomatis semua kesalahan bisnis consumer. Antrean subscriber notifikasi berbeda dari antrean Plan delivery pada slide 9.
+- **Slide 11:** contoh memakai REST API dengan Cognito user pool authorizer dan scope method. Pemeriksaan token serta scope tidak menggantikan pemeriksaan kepemilikan record. User pool token tidak sama dengan kredensial AWS dari identity pool atau execution role Lambda.
+- **Slide 12:** contoh izin pemanggil menggunakan resource-based policy Lambda yang membatasi rule EventBridge lewat aws:SourceArn. Execution role mengatur akses keluar function dengan kredensial sementara; trust policy role mengizinkan layanan Lambda mengambil role tersebut. GetItem pada tabel Orders adalah ilustrasi izin data, bukan policy produksi lengkap. Izin logging dan akses lain yang dibutuhkan tetap harus ditentukan.
 - **Klaim pembuka:** jangan mengartikan “Zero Idle Cost” sebagai seluruh sistem pasti gratis saat tidak ada transaksi. Biaya bergantung pada layanan, konfigurasi, dan penggunaan.
 
 ## Rujukan lokal
@@ -123,6 +267,13 @@ Jadi, satu kabar bisa dipakai beberapa tugas. Step Functions tetap mengatur lang
 - [Serverless dan aplikasi modern](materi/02-serverless-dan-aplikasi-modern.md)
 - [Event-driven architecture dan EventBridge](materi/03-event-driven-architecture-dan-eventbridge.md)
 - [AWS Lambda](materi/04-aws-lambda.md)
+- [Amazon API Gateway](materi/05-amazon-api-gateway.md)
+- [Pilihan EC2, container, dan serverless](materi/06-techtalk-ec2-vs-container-vs-serverless.md)
+- [Amazon SQS](materi/07-amazon-sqs.md)
+- [Amazon SNS](materi/08-amazon-sns.md)
+- [Keamanan serverless dasar](materi/09-keamanan-serverless-dasar.md)
+- [Cognito dan keamanan API Gateway](materi/10-cognito-dan-keamanan-api-gateway.md)
+- [Keamanan Lambda, data, dan auditing](materi/11-keamanan-lambda-data-dan-auditing.md)
 - [AWS Step Functions](materi/12-aws-step-functions.md)
 - [Konten slide terbaru](src/data/slides.js)
 - [Graph dan pembuka](src/slides/diagrams.js)

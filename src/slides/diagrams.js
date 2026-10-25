@@ -6,8 +6,8 @@
  * Language: English Study Case.
  */
 import gsap from 'gsap';
-import { AWS_SERVICES } from '../data/slides.js';
-import { INSPECTOR_DATA, SLIDE_3_INSPECTORS, SLIDE_4_INSPECTORS, SLIDE_5_INSPECTORS } from '../data/inspectors.js';
+import { AWS_SERVICES, SLIDES } from '../data/slides.js';
+import { INSPECTOR_DATA, SLIDE_INSPECTORS } from '../data/inspectors.js';
 
 // --------------------------------------------------------------------------
 // AWS ARCHITECTURE ICONS & GROUP STANDARDS (Release 24-2026.07.31)
@@ -200,183 +200,231 @@ const GRAPHS = {
     ],
   },
   6: {
-    title: 'Events trigger independent Lambda invocations', cloud: [30, 55, 900, 500],
+    title: 'Lambda: event input, our handler code, and a delivery planning request',
+    height: 800, cloud: [40, 40, 880, 585],
+    headings: [[410, 160, '(1)  INPUT · Event data'], [420, 390, '(2)  RUN · Execute']],
+    annotations: [[85, 110, 'Inside one event-driven task']],
+    eventCard: [410, 185, 390, 155],
+    outputCard: true,
     nodes: [
-      ['eventbridge', 145, 290, 'EventBridge'],
-      ['lambda', 480, 140, 'Lambda', 'Invocation 1'],
-      ['lambda', 480, 290, 'Lambda', 'Invocation 2'],
-      ['lambda', 480, 440, 'Lambda', 'Invocation N'],
-      ['dynamodb', 815, 290, 'DynamoDB'],
+      ['eventbridge', 210, 260, 'Amazon EventBridge', 'Delivery rule matched'],
+      ['lambda', 605, 455, 'AWS Lambda', 'Plan delivery', 'plan-delivery'],
+      ['dynamodb', 815, 455, 'Amazon DynamoDB', 'Order details'],
     ],
     links: [
-      ['M180 290H295V140H445', 'Invoke', 365, 120],
-      ['M295 290H445', 'Invoke', 365, 270],
-      ['M295 290V440H445', 'Invoke', 365, 420],
-      ['M515 140H655V290H780', '', 0, 0],
-      ['M515 290H655', 'Write', 590, 270],
-      ['M515 440H655V290', '', 0, 0],
+      ['M245 260H410', 'Send event', 325, 240, 'event'],
+      ['M605 340V407', '', 0, 0, 'event'],
+      ['M653 455H783', 'Read by order ID', 738, 417],
+      ['M605 615V650', 'Send request', 735, 645],
     ],
   },
   7: {
-    title: 'Direct ingress without an intermediate Lambda', cloud: [230, 95, 700, 390],
+    title: 'API Gateway starts the order workflow, which stores an order with status RECEIVED in DynamoDB',
+    height: 800, cloud: [210, 40, 720, 720],
     nodes: [
-      ['mobile', 100, 285, 'EV app'], ['apigateway', 465, 285, 'API Gateway', 'Validate & throttle'],
-      ['sqs', 825, 285, 'SQS', 'Buffer requests'],
+      ['mobile', 85, 220, 'Buyer app'],
+      ['apigateway', 350, 220, 'Amazon API Gateway', 'REST API route'],
+      ['stepfunctions', 730, 220, 'AWS Step Functions', 'Same order workflow'],
+      ['dynamodb', 730, 480, 'Amazon DynamoDB', 'Order details'],
     ],
     links: [
-      ['M135 285H430', 'HTTPS POST', 280, 265],
-      ['M500 285H790', 'SendMessage', 645, 265],
+      ['M120 220H315', '1. HTTPS POST', 210, 200],
+      ['M385 220H695', '2. StartExecution', 540, 200],
+      ['M730 185V115H350V185', 'Workflow reference', 540, 95],
+      ['M330 185V145H85V185', 'Initial reply', 165, 125],
+      ['M765 220H875V480H765', '3. PutItem', 805, 365],
+    ],
+    headings: [[280, 420, 'Stored order'], [280, 620, '4. Check progress separately']],
+    annotations: [
+      [280, 452, 'After a successful write:'],
+      [280, 485, 'orderId: EV-1042'],
+      [280, 515, 'status: RECEIVED'],
+      [280, 655, 'Use a separate status route (hidden).'],
+      [280, 690, 'Started ≠ stored. RECEIVED ≠ CONFIRMED.'],
     ],
   },
   8: {
-    title: 'Match each workload to its compute model', cloud: [30, 55, 900, 535],
+    title: 'Three compute choices: event-driven Lambda, containers with ECS and Fargate, or server control with EC2',
+    height: 800, cloud: [40, 40, 880, 740],
     nodes: [
-      ['eventbridge', 145, 170, 'EventBridge'], ['lambda', 480, 170, 'Lambda', 'Event handlers'],
-      ['dynamodb', 815, 170, 'DynamoDB'],
-      ['ecs', 145, 400, 'ECS', 'Container scheduler'],
-      ['fargate', 650, 350, 'Fargate', 'Managed capacity'],
-      ['ec2', 650, 495, 'EC2', 'Self-managed hosts'],
+      ['lambda', 255, 185, 'AWS Lambda', 'Check order', 'check-order'],
+      ['ecs', 155, 385, 'Amazon ECS', 'Manage containers'],
+      ['fargate', 355, 385, 'AWS Fargate', 'Run containers'],
+      ['ec2', 255, 585, 'Amazon EC2', 'Control the server'],
     ],
-    links: [
-      ['M180 170H445', 'Invoke', 310, 150], ['M515 170H780', 'Persist', 645, 150],
-      ['M180 400H350V350H615', 'Run containers', 485, 330],
-      ['M350 400V495H615', 'Run containers', 485, 475],
-    ],
+    links: [],
+    headings: [[480, 150, 'Event-driven tasks'], [480, 350, 'Container workloads'],
+      [480, 550, 'OS and software control']],
+    annotations: [[480, 190, 'Best for: short, event-triggered tasks'],
+      [480, 225, 'Standard Lambda: up to 15 min / run'],
+      [480, 260, 'Team: code, permissions and settings'],
+      [480, 390, 'Best for: longer-running services or jobs'],
+      [480, 425, 'ECS: orchestrates container tasks'],
+      [480, 460, 'Fargate: serverless compute'],
+      [480, 590, 'Best for: custom OS or software needs'],
+      [480, 625, 'Team: OS patches, capacity and scaling'],
+      [480, 660, 'Also supports: ECS containers'],
+      [85, 742, 'Choose per workload. Combine options where they fit.']],
   },
   9: {
-    title: 'SNS fans out; SQS buffers each consumer', cloud: [30, 45, 900, 520],
+    title: 'SQS buffers delivery events; Lambda polls and processes them, with repeated failures sent to a dead-letter queue',
+    height: 800, cloud: [40, 40, 880, 740],
     nodes: [
-      ['lambda', 120, 270, 'Order producer'], ['sns', 335, 270, 'SNS'],
-      ['sqs', 600, 120, 'SQS', 'Payment'], ['lambda', 840, 120, 'Payment worker'],
-      ['sqs', 600, 270, 'SQS', 'Factory'], ['lambda', 840, 270, 'Factory worker'],
-      ['sqs', 600, 420, 'SQS', 'Notification'], ['sqs', 840, 500, 'Dead-letter queue'],
+      ['eventbridge', 180, 210, 'Amazon EventBridge', 'Delivery rule'],
+      ['sqs', 480, 210, 'Amazon SQS', 'Waiting delivery updates', 'delivery-queue'],
+      ['lambda', 780, 210, 'AWS Lambda', 'Plan delivery', 'plan-delivery'],
+      ['sqs', 735, 535, 'Amazon SQS', 'Dead-letter queue', 'delivery-dlq'],
     ],
     links: [
-      ['M155 270H300', 'Publish', 225, 250],
-      ['M370 270H465V120H565', '', 0, 0], ['M465 270H565', 'Fan-out', 475, 250],
-      ['M465 270V420H565', '', 0, 0],
-      ['M635 120H805', 'Poll', 720, 100], ['M635 270H805', 'Poll', 720, 250],
-      ['M635 420H720V500H805', 'Failed retries', 735, 480, 'failure'],
+      ['M215 210H445', 'Send event', 330, 190, 'event'],
+      ['M515 210H745', 'Poll → invoke', 630, 190, 'event'],
+      ['M480 310H525V535H700', 'Receive limit exceeded', 700, 360, 'event'],
     ],
+    headings: [[100, 125, '1. Buffer incoming work'], [115, 425, '2. Process safely'],
+      [590, 425, '3. Review failures']],
+    annotations: [[115, 475, 'In progress'], [255, 475, 'Message hidden'],
+      [115, 520, 'Success'], [255, 520, 'Message deleted'],
+      [115, 565, 'Failure'], [255, 565, 'Available again'],
+      [115, 645, 'Visibility timeout sets the retry window.'],
+      [590, 650, 'Alert → inspect → fix → redrive'],
+      [100, 735, 'Dashed = message flow · Lambda polls SQS; SQS does not push.']],
   },
   10: {
-    title: 'From source change to a guarded release', cloud: [360, 65, 570, 490],
+    title: 'One order update fans out through a Standard SNS topic to SMS, HTTPS and an optional SQS subscriber',
+    height: 800, cloud: [50, 50, 600, 680],
+    headings: [[100, 135, '1. Publish once'], [390, 135, '2. Fan out'], [710, 135, 'Subscribers']],
     nodes: [
-      ['desktop', 90, 200, 'Source code'], ['desktop', 270, 200, 'CI runner', 'GitHub Actions'],
-      ['sam', 475, 200, 'AWS SAM'], ['cloudformation', 700, 200, 'CloudFormation'],
-      ['lambda', 700, 420, 'Lambda', 'Canary → live alias'],
-      ['cloudwatch', 475, 420, 'CloudWatch', 'Release alarms'],
+      ['stepfunctions', 180, 270, 'AWS Step Functions', 'Order status update'],
+      ['sns', 450, 270, 'Amazon SNS', 'Topic: order updates'],
+      ['mobile', 820, 200, 'Buyer channel', 'SMS subscription'],
+      ['internet', 820, 450, 'Support app', 'HTTPS subscription'],
+      ['sqs', 450, 585, 'Amazon SQS', 'Optional subscriber', 'notification-queue'],
     ],
     links: [
-      ['M125 200H235', 'Push', 180, 180], ['M305 200H440', 'Build', 370, 180],
-      ['M510 200H665', 'Deploy', 585, 180], ['M700 270V385', 'Update', 743, 315],
-      ['M665 420H510', 'Metrics', 585, 400],
-      ['M475 455V520H865V420H735', 'Rollback on alarm', 680, 540, 'failure'],
+      ['M215 270H415', 'Publish', 315, 248],
+      ['M485 270H680V200H785', 'Copy', 730, 180, 'event'],
+      ['M680 270V450H785', 'Copy', 730, 430, 'event'],
+      ['M450 365V550', 'Copy to queue', 530, 465, 'event'],
     ],
+    annotations: [[100, 705, 'One copy per matching subscription · Consumers run independently.'],
+      [100, 770, 'Dashed = message flow · Queue consumers and delivery DLQs are hidden.']],
   },
   11: {
-    title: 'Filter traffic, verify identity, then invoke', cloud: [215, 55, 715, 500],
+    title: 'Buyer app signs in with a Cognito user pool, sends an access token to a REST API Cognito authorizer, then workflow task code checks order ownership',
+    height: 800, cloud: [240, 50, 690, 690],
+    headings: [[285, 130, '1. Prove identity'], [285, 365, '2. Check API permission']],
     nodes: [
-      ['mobile', 95, 290, 'Customer'], ['waf', 300, 290, 'AWS WAF'],
-      ['apigateway', 560, 290, 'API Gateway', 'JWT authorizer'],
-      ['cognito', 560, 125, 'Cognito', 'User tokens'],
-      ['lambda', 820, 290, 'Lambda'], ['kms', 820, 475, 'KMS'],
+      ['mobile', 105, 300, 'Buyer app'],
+      ['cognito', 445, 200, 'Amazon Cognito', 'User pool'],
+      ['apigateway', 445, 440, 'Amazon API Gateway', 'REST · Cognito authorizer'],
+      ['stepfunctions', 775, 440, 'AWS Step Functions', 'Same order workflow'],
     ],
     links: [
-      ['M130 290H265', 'HTTPS', 195, 270], ['M335 290H525', 'Allowed', 430, 270],
-      ['M560 215V255', 'JWT', 610, 238], ['M595 290H785', 'Valid JWT', 690, 270],
-      ['M820 365V440', 'Decrypt', 865, 395],
+      ['M140 280H210V200H410', 'Sign in', 305, 178],
+      ['M410 222H260V310H140', 'Access token to app', 345, 302],
+      ['M105 380V440H410', 'HTTPS + access token', 260, 418],
+      ['M480 440H740', 'Start workflow', 610, 418],
     ],
+    annotations: [[70, 785, 'Request path shown · Replies, task calls and notifications hidden.']],
   },
   12: {
-    title: 'Private access to managed services', cloud: [25, 45, 910, 510],
-    groups: [
-      [50, 150, 435, 285, 'VPC · private subnet', '#8C4FFF'],
-    ],
+    title: 'Plan delivery: the function policy limits invocation; the execution role limits DynamoDB access',
+    height: 800, cloud: [45, 40, 870, 720],
+    headings: [[90, 135, 'Runtime · Direct trigger from slide 6']],
     nodes: [
-      ['lambda', 155, 290, 'Lambda', 'No public IP'],
-      ['privatelink', 380, 290, 'VPC endpoints'],
-      ['dynamodb', 790, 135, 'DynamoDB', 'Gateway endpoint'],
-      ['kms', 790, 290, 'KMS', 'Interface endpoint'],
-      ['s3', 790, 445, 'S3', 'Gateway endpoint'],
+      ['eventbridge', 200, 245, 'Amazon EventBridge', 'Delivery rule'],
+      ['lambda', 490, 245, 'AWS Lambda', 'Plan delivery', 'plan-delivery'],
+      ['dynamodb', 780, 245, 'Amazon DynamoDB', 'Orders table'],
+      ['iam', 185, 580, 'AWS IAM', 'Execution role', 'delivery-role'],
     ],
     links: [
-      ['M190 290H345', 'Private route', 267, 270],
-      ['M415 290H585V135H755', '', 0, 0],
-      ['M585 290H755', 'AWS network', 670, 270],
-      ['M585 290V445H755', '', 0, 0],
+      ['M235 245H455', 'Invoke function', 345, 223, 'event'],
+      ['M525 245H745', 'GetItem', 635, 223],
     ],
+    annotations: [[90, 730, 'Arrows = runtime calls · Panels = permission settings · Replies hidden']],
   },
   13: {
-    title: 'A saga coordinates tasks and compensation', cloud: [25, 45, 910, 545],
-    groups: [[50, 95, 860, 365, 'Step Functions workflow', '#E7157B']],
+    title: 'Step Functions sequences the same order tasks and follows configured error paths',
+    height: 800, cloud: [40, 40, 880, 740],
+    headings: [[410, 160, 'Same three tasks, in sequence']],
     nodes: [
-      ['lambda', 180, 210, 'Authorize credit'], ['lambda', 480, 210, 'Charge deposit'],
-      ['lambda', 780, 210, 'Allocate VIN'],
-      ['lambda', 480, 365, 'Refund deposit'], ['lambda', 180, 365, 'Cancel credit hold'],
-      ['sns', 780, 500, 'SNS', 'Order status'],
+      ['stepfunctions', 170, 160, 'AWS Step Functions', 'Controls this plan'],
+      ['lambda', 210, 340, 'AWS Lambda', 'Check order', 'check-order'],
+      ['lambda', 490, 340, 'AWS Lambda', 'Reserve stock', 'reserve-stock'],
+      ['lambda', 780, 340, 'AWS Lambda', 'Charge payment', 'charge-payment'],
+      ['eventbridge', 780, 610, 'Amazon EventBridge', 'OrderConfirmed'],
     ],
+    taskBoxes: [[130, 565, 'Handle failure']],
     links: [
-      ['M215 210H445', 'Approved', 330, 190], ['M515 210H745', 'Charged', 630, 190],
-      ['M815 210H865V365H515', 'VIN unavailable', 650, 345, 'failure'],
-      ['M780 285V465', 'Completed', 830, 430],
-      ['M445 365H215', 'Compensate', 330, 345, 'failure'],
-      ['M180 440V500H745', 'Cancelled', 475, 480, 'failure'],
+      ['M170 255V280H210V305', 'Start', 285, 280],
+      ['M245 340H455', 'Pass', 350, 320],
+      ['M525 340H745', 'Stock reserved', 635, 320],
+      ['M490 435V525H272V565', 'Error after retry policy', 650, 505, 'failure'],
+      ['M780 435V525H490', '', 0, 0, 'failure'],
+      ['M815 340H875V610H815', 'After success', 780, 555, 'event'],
     ],
+    annotations: [[410, 195, 'Task results decide the next step.'],
+      [100, 735, 'Retries and recovery are chosen by the team.']],
   },
   14: {
-    title: 'Persist the order, then publish from the change stream', cloud: [25, 45, 910, 510],
+    title: 'Protect order records and keys, then audit actions and check resource settings',
+    height: 800, cloud: [40, 40, 880, 740],
+    headings: [[100, 110, 'Protect stored records'], [100, 460, 'Review actions and settings']],
     nodes: [
-      ['cloudfront', 140, 155, 'CloudFront'], ['apigateway', 475, 155, 'API Gateway'],
-      ['lambda', 810, 155, 'Order handler'],
-      ['dynamodb', 810, 410, 'DynamoDB'], ['streams', 475, 410, 'DynamoDB Streams'],
-      ['eventbridge', 140, 410, 'EventBridge'],
+      ['dynamodb', 250, 200, 'Amazon DynamoDB', 'Order records'],
+      ['kms', 710, 200, 'AWS KMS', 'Manage encryption keys'],
+      ['cloudtrail', 250, 540, 'AWS CloudTrail', 'Who did what, when?'],
+      ['config', 710, 540, 'AWS Config', 'Check chosen rules'],
     ],
-    links: [
-      ['M175 155H440', 'API request', 305, 135], ['M510 155H775', 'Invoke', 640, 135],
-      ['M810 235V375', 'PutItem', 855, 290],
-      ['M775 410H510', 'Item changes', 640, 390],
-      ['M440 410H175', 'Via Pipes', 305, 390],
-    ],
+    links: [],
+    annotations: [[100, 355, 'Limit access. Encrypt connections and stored data.'],
+      [100, 390, 'An index supports another lookup, such as status.'],
+      [100, 710, 'Audit coverage and retention need configuration.']],
   },
   15: {
-    title: 'Trace the request and surface slow dependencies', cloud: [25, 55, 660, 500],
+    title: 'Record logs, metrics and traces to investigate the same Charge payment task',
+    height: 800, cloud: [40, 40, 660, 740],
+    headings: [[100, 110, 'Follow Charge payment from the main workflow']],
     nodes: [
-      ['apigateway', 120, 170, 'API Gateway'], ['lambda', 390, 170, 'Lambda'],
-      ['internet', 820, 170, 'Bank API', '820 ms'],
-      ['dynamodb', 590, 370, 'DynamoDB'],
-      ['xray', 210, 450, 'X-Ray', 'Distributed traces'],
-      ['cloudwatch', 490, 450, 'CloudWatch', 'Metrics & alarms'],
+      ['stepfunctions', 190, 200, 'AWS Step Functions', 'Order workflow'],
+      ['lambda', 530, 200, 'AWS Lambda', 'Charge payment', 'charge-payment'],
+      ['internet', 835, 200, 'Payment provider', 'External service'],
+      ['cloudwatch', 260, 570, 'Amazon CloudWatch', 'Logs + metrics'],
+      ['xray', 560, 570, 'AWS X-Ray', 'Traces'],
     ],
     links: [
-      ['M155 170H355', 'Request', 255, 150], ['M425 170H785', 'Credit check', 605, 150],
-      ['M390 250V370H555', 'Read / write', 465, 350],
-      ['M120 250V310H210V415', 'Trace', 160, 290, 'telemetry'],
-      ['M390 250V310H210', '', 0, 0, 'telemetry'],
-      ['M390 310H490V415', 'Metrics', 490, 325, 'telemetry'],
+      ['M225 200H495', 'Call task', 360, 180],
+      ['M565 200H800', 'Ask payment', 650, 180],
+      ['M530 282V390H260V535', 'Logs + metrics', 355, 370, 'telemetry'],
+      ['M550 282V430H560V535', 'Traces', 610, 480, 'telemetry'],
     ],
+    annotations: [[100, 715, 'Include order IDs. Keep sensitive data out of logs.'],
+      [100, 745, 'Traces show the calls we record.']],
   },
   16: {
-    title: 'The production event-driven architecture', cloud: [180, 40, 755, 545],
+    title: 'The proposed EV design keeps the same order workflow and adds independent messaging branches',
+    height: 800, cloud: [190, 40, 750, 740],
+    headings: [[225, 110, 'Same order workflow and independent reactions']],
     nodes: [
-      ['mobile', 80, 140, 'EV buyer'], ['cloudfront', 280, 140, 'CloudFront'],
-      ['apigateway', 515, 140, 'API Gateway', 'WAF · Cognito'],
-      ['eventbridge', 810, 140, 'EventBridge'],
-      ['stepfunctions', 810, 330, 'Step Functions'],
-      ['sqs', 515, 330, 'SQS'], ['lambda', 280, 330, 'Lambda'],
-      ['dynamodb', 280, 475, 'DynamoDB'], ['kms', 515, 475, 'KMS'],
-      ['cloudwatch', 810, 475, 'CloudWatch'],
+      ['mobile', 85, 200, 'Buyer app'],
+      ['apigateway', 300, 200, 'Amazon API Gateway', 'Receive orders'],
+      ['stepfunctions', 550, 200, 'AWS Step Functions', 'Same three order tasks'],
+      ['dynamodb', 810, 200, 'Amazon DynamoDB', 'Order records'],
+      ['sns', 300, 450, 'Amazon SNS', 'Order updates'],
+      ['eventbridge', 550, 450, 'Amazon EventBridge', 'OrderConfirmed'],
+      ['sqs', 810, 450, 'Amazon SQS', 'Delivery queue', 'delivery-queue'],
+      ['lambda', 550, 690, 'AWS Lambda', 'Update sales report', 'update-sales-report'],
+      ['lambda', 810, 690, 'AWS Lambda', 'Plan delivery', 'plan-delivery'],
     ],
     links: [
-      ['M115 140H245', 'HTTPS', 180, 120], ['M315 140H480', 'Request', 395, 120],
-      ['M550 140H775', 'PutEvents', 660, 120],
-      ['M810 215V295', 'Start saga', 855, 235],
-      ['M845 140H890V265H650V330H550', 'Enqueue', 700, 285],
-      ['M480 330H315', 'Consume', 395, 310],
-      ['M280 410V440', 'Persist', 324, 425],
-      ['M315 345H395V475H480', 'Decrypt', 440, 430],
-      ['M245 330H205V565H915V80H810V105', 'Domain events', 660, 550, 'feedback'],
-      ['M775 330H740V475H775', 'Metrics', 800, 430, 'telemetry'],
+      ['M120 200H265', 'Order', 230, 180],
+      ['M335 200H515', 'Start steps', 425, 180],
+      ['M585 200H775', 'Read / write', 680, 180],
+      ['M515 215H455V450H335', 'Status update', 350, 350],
+      ['M550 285V415', 'Publish after success', 665, 350],
+      ['M585 450H775', 'Delivery rule', 680, 430, 'event'],
+      ['M810 535V655', 'Read messages', 875, 590, 'event'],
+      ['M550 535V655', 'Report rule', 620, 590, 'event'],
     ],
   },
 };
@@ -393,7 +441,7 @@ const EXTRA_ICONS = {
 function renderGraph(slideId) {
   const graph = GRAPHS[slideId];
   const marker = `graph-arrow-${slideId}`;
-  return `<div class="diagram-container service-graph${[2, 3, 4, 5].includes(slideId) ? ' graph-context' : ''}">
+  return `<div class="diagram-container service-graph${slideId >= 2 ? ' graph-context' : ''}">
     <svg class="aws-stage-svg" viewBox="0 0 960 ${graph.height || 600}" role="img" aria-labelledby="graph-title-${slideId}">
       <title id="graph-title-${slideId}">${graph.title}</title>
       <defs>
@@ -404,7 +452,47 @@ function renderGraph(slideId) {
         ${renderOpenArrowMarker(`${marker}-feedback`, '#167b55')}
       </defs>
       ${slideId === 2 ? '<text x="210" y="45" class="graph-group-label" fill="#232f3e">Proposed order-processing services</text>' : ''}
-      ${renderAwsCloudBoundary(...graph.cloud, 'AWS Cloud', [2, 3, 4, 5].includes(slideId))}
+      ${renderAwsCloudBoundary(...graph.cloud, 'AWS Cloud', slideId >= 2)}
+      ${slideId === 6 ? `<g class="delivery-execution-surface comparison-note" aria-hidden="true">
+        <rect x="400" y="365" width="490" height="245" rx="8" fill="#f8fafc" stroke="#d9e1e9" />
+      </g>` : ''}
+      ${slideId === 7 ? `<g class="order-state-surface comparison-note" aria-hidden="true">
+        <rect x="250" y="385" width="370" height="155" rx="8" fill="#f8fafc" stroke="#d9e1e9" />
+        <line x1="280" y1="465" x2="590" y2="465" stroke="#e2e8f0" />
+        <rect x="250" y="585" width="630" height="145" rx="8" fill="#f8fafc" stroke="#d9e1e9" />
+      </g>` : ''}
+      ${slideId === 9 ? `<g class="queue-lifecycle-surface comparison-note" aria-hidden="true">
+        <rect x="90" y="385" width="400" height="300" rx="8" fill="#f8fafc" stroke="#d9e1e9" />
+        <rect x="565" y="385" width="310" height="300" rx="8" fill="#ffffff" stroke="#d9e1e9" />
+        <path d="M115 443H465 M590 443H850 M115 490H465 M115 535H465 M115 600H465" fill="none" stroke="#e2e8f0" />
+      </g>` : ''}
+      ${slideId === 11 ? `<g class="access-record-check comparison-note" fill="#232f3e">
+        <rect x="285" y="585" width="600" height="115" rx="8" fill="#ffffff" stroke="#d9e1e9" />
+        <text x="310" y="617" font-weight="700">3. Check the record in task code</text>
+        <text x="310" y="650">Verified buyer ID must match the order owner.</text>
+        <text x="310" y="677">Deny access before returning or changing order data.</text>
+      </g>` : ''}
+      ${slideId === 12 ? `<g class="task-permissions comparison-note" fill="#232f3e">
+        <g class="permission-panel">
+        <rect x="90" y="380" width="780" height="115" rx="8" fill="#f8fafc" stroke="#d9e1e9" />
+        <text x="115" y="412" font-weight="700">1. Who may invoke? · Lambda resource-based policy</text>
+        <text x="115" y="445">Allow events.amazonaws.com → lambda:InvokeFunction</text>
+        <text x="115" y="474">Only the delivery rule ARN · aws:SourceArn</text>
+        </g>
+        <g class="permission-panel">
+        <rect x="90" y="520" width="780" height="170" rx="8" fill="#ffffff" stroke="#d9e1e9" />
+        <text x="325" y="555" font-weight="700">2. What may the task do?</text>
+        <text x="325" y="588">Allow dynamodb:GetItem</text>
+        <text x="325" y="617">Resource: Orders table ARN only</text>
+        <text x="325" y="646">3. No delete or payment permissions</text>
+        </g>
+      </g>` : ''}
+      ${slideId === 8 ? [115, 315, 515].map(y => `<g class="compute-choice-surface comparison-note" aria-hidden="true">
+        <rect x="75" y="${y}" width="810" height="180" rx="8" fill="#ffffff" stroke="#d9e1e9" />
+        <rect x="76" y="${y + 1}" width="368" height="178" rx="7" fill="#f5f7fa" />
+        <line x1="445" y1="${y}" x2="445" y2="${y + 180}" stroke="#d9e1e9" />
+        <line x1="480" y1="${y + 49}" x2="850" y2="${y + 49}" stroke="#e6ebf0" />
+      </g>`).join('') : ''}
       ${(graph.headings || []).map(([x, y, text]) => `<text x="${x}" y="${y}" class="graph-group-label" fill="#232f3e">${text}</text>`).join('')}
       ${(graph.groups || []).map(([x, y, width, height, label, color]) => `
         <g class="graph-boundary">
@@ -415,18 +503,41 @@ function renderGraph(slideId) {
       ${(graph.taskBoxes || []).map(([x, y, text]) => `<g class="comparison-task"><rect x="${x}" y="${y}" width="285" height="34" rx="0" fill="#f8fafc" stroke="#64748b"/><text x="${x + 142.5}" y="${y + 22}" text-anchor="middle" fill="#232f3e">${text}</text></g>`).join('')}
       ${(graph.annotations || []).map(([x, y, text]) => `<text x="${x}" y="${y}" class="comparison-note" fill="#232f3e">${text}</text>`).join('')}
       ${graph.eventCard ? `<g class="routing-event inspectable-node" data-node="event" data-inspector="order-event" role="button" tabindex="0" aria-label="Inspect OrderConfirmed event">
-        <rect class="node-rect" x="410" y="185" width="390" height="155" rx="0" fill="#f8fafc" stroke="#64748b" />
-        <text x="430" y="215">source: apex.orders</text>
+        <rect class="node-rect" x="410" y="185" width="390" height="155" rx="${slideId === 6 ? 8 : 0}" fill="#f8fafc" stroke="#64748b" />
+        ${slideId === 6 ? `<text x="430" y="215" font-weight="700">Order confirmed</text>
+        <text x="430" y="248">Order ID: EV-1042</text>
+        <text x="430" y="281">Status: confirmed</text>
+        <text x="430" y="314">Event: OrderConfirmed</text>` : `<text x="430" y="215">source: apex.orders</text>
         <text x="430" y="245">type: OrderConfirmed</text>
         <text x="430" y="275">order ID: EV-1042</text>
         <text x="430" y="305">status: confirmed</text>
-        <text x="430" y="328">type = event name (detail type)</text>
+        <text x="430" y="328">type = event name (detail type)</text>`}
       </g>` : ''}
       ${(graph.rules || []).map(([key, x, y, title, lines]) => `<g class="routing-rule inspectable-node" data-node="rule" data-inspector="${key}" role="button" tabindex="0" aria-label="Inspect ${title}">
         <rect class="node-rect" x="${x}" y="${y}" width="230" height="110" rx="0" fill="#f8fafc" stroke="#64748b" />
         <text x="${x + 15}" y="${y + 25}" font-weight="700">${title}</text>
         ${lines.map((text, i) => `<text x="${x + 15}" y="${y + 50 + i * 23}">${text}</text>`).join('')}
       </g>`).join('')}
+      ${slideId === 6 ? `<g class="delivery-handler comparison-note" fill="#232f3e">
+        <rect x="80" y="365" width="295" height="245" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+        <text x="100" y="395" font-weight="700">HANDLER · Our code</text>
+        <text x="100" y="425">Entry point for the event</text>
+        <text x="100" y="466" class="handler-code">id = event.detail.orderId</text>
+        <text x="100" y="497" class="handler-code">order = findOrder(id)</text>
+        <text x="100" y="528" class="handler-code">requestPlan(order)</text>
+        <text x="100" y="555">Illustrative pseudocode</text>
+        <line x1="100" y1="568" x2="355" y2="568" stroke="#fed7aa" />
+        <text x="100" y="592">AWS runs and scales compute.</text>
+      </g>` : ''}
+      ${slideId === 6 ? `<g class="delivery-work comparison-note" fill="#232f3e" text-anchor="middle">
+        <text x="645" y="587">Then request a delivery plan.</text>
+      </g>` : ''}
+      ${graph.outputCard ? `<g class="delivery-output inspectable-node" data-node="planning-request" data-inspector="planning-request" role="button" tabindex="0" aria-label="Inspect delivery system and planning request">
+        <rect class="node-rect" x="410" y="650" width="390" height="100" rx="8" fill="#f8fafc" stroke="#64748b" />
+        <text x="430" y="678" font-weight="700">(3)  DELIVERY SYSTEM</text>
+        <text x="430" y="708">Receives planning request · EV-1042</text>
+        <text x="430" y="738">Request received ≠ delivery completed</text>
+      </g>` : ''}
       ${graph.links.map(([path, label, x, y, kind]) => `
         <g class="graph-link ${kind || ''}">
           <path d="${path}" marker-end="url(#${marker}${kind ? `-${kind}` : ''})"/>
@@ -434,12 +545,13 @@ function renderGraph(slideId) {
         </g>`).join('')}
       ${graph.nodes.map(([key, x, y, label, caption, inspectorKey], index) => {
         const service = AWS_SERVICES[key];
-        const inspectable = Boolean(INSPECTOR_DATA[key] || (slideId === 3 && SLIDE_3_INSPECTORS[key]) || (slideId === 4 && SLIDE_4_INSPECTORS[key]) || (slideId === 5 && SLIDE_5_INSPECTORS[inspectorKey || key]));
-        return `<g class="graph-node${inspectable ? ' inspectable-node' : ''}" ${inspectable ? `data-node="${key}" data-node-index="${index}" data-inspector="${inspectorKey || key}" role="button" tabindex="0" aria-label="Inspect ${label}${caption ? `: ${caption}` : ''}"` : ''} transform="translate(${x}, ${y})">
-          <rect class="node-rect" x="-82" y="-45" width="164" height="${caption ? 122 : 100}" rx="8" fill="transparent" stroke="transparent"/>
-          <image href="${service?.icon || EXTRA_ICONS[key]}" x="-32" y="-32" width="64" height="64"/>
-          <text y="57" class="graph-node-label">${label}</text>
-          ${caption ? `<text y="77" class="graph-node-caption">${caption}</text>` : ''}
+        const inspectable = Boolean(SLIDE_INSPECTORS[slideId]?.[inspectorKey || key] || INSPECTOR_DATA[key]);
+        const enlarged = slideId === 6 && inspectorKey === 'plan-delivery';
+        return `<g class="graph-node${slideId === 6 && key === 'dynamodb' ? ' delivery-lookup' : ''}${inspectable ? ' inspectable-node' : ''}" ${inspectable ? `data-node="${key}" data-node-index="${index}" data-inspector="${inspectorKey || key}" role="button" tabindex="0" aria-label="Inspect ${label}${caption ? `: ${caption}` : ''}"` : ''} transform="translate(${x}, ${y})">
+          <rect class="node-rect" x="-82" y="-45" width="164" height="${enlarged ? 145 : caption ? 122 : 100}" rx="8" fill="transparent" stroke="transparent"/>
+          <image href="${service?.icon || EXTRA_ICONS[key]}" x="${enlarged ? -48 : -32}" y="${enlarged ? -48 : -32}" width="${enlarged ? 96 : 64}" height="${enlarged ? 96 : 64}"/>
+          <text y="${enlarged ? 73 : 57}" class="graph-node-label">${label}</text>
+          ${caption ? `<text y="${enlarged ? 93 : 77}" class="graph-node-caption">${caption}</text>` : ''}
         </g>`;
       }).join('')}
     </svg>
@@ -448,84 +560,21 @@ function renderGraph(slideId) {
 
 
 function renderSlide17() {
-  return `
-    <div class="slide-closing-wrapper">
-      <div class="closing-hero-card">
-        <div class="closing-eyebrow font-mono">
-          <span class="badge-tag">ACT IV: ARCHITECTURAL VICTORY</span>
-          <span class="badge-accent">Executive Summary &amp; Scorecard</span>
-        </div>
-        <h1 class="closing-main-title font-serif">5 Golden Rules of Serverless Event-Driven Architecture</h1>
-        <p class="closing-summary font-sans">
-          Essential architectural principles proving the success of launching the digital EV e-commerce platform in 6 months with 74% cost reduction and zero downtime.
-        </p>
-
-        <!-- 5 Golden Rules Grid -->
-        <div class="rules-five-grid font-sans">
-          <div class="rule-box">
-            <span class="rule-num font-mono">01</span>
-            <div class="rule-content">
-              <h4 class="rule-title">Small, Purpose-Specific Events</h4>
-              <p class="rule-desc">Design event schemas as compact domain facts within bounded contexts, not monolithic database dumps.</p>
-            </div>
-          </div>
-          <div class="rule-box">
-            <span class="rule-num font-mono">02</span>
-            <div class="rule-content">
-              <h4 class="rule-title">Embrace Eventual Consistency</h4>
-              <p class="rule-desc">Adopt distributed Saga workflows with automated compensating rollbacks instead of slow distributed locks.</p>
-            </div>
-          </div>
-          <div class="rule-box">
-            <span class="rule-num font-mono">03</span>
-            <div class="rule-content">
-              <h4 class="rule-title">Offload Ingress &amp; Buffering</h4>
-              <p class="rule-desc">Delegate rate limiting to API Gateway and shock absorption directly to SQS FIFO without custom compute code.</p>
-            </div>
-          </div>
-          <div class="rule-box">
-            <span class="rule-num font-mono">04</span>
-            <div class="rule-content">
-              <h4 class="rule-title">Single-Table Persistence</h4>
-              <p class="rule-desc">Leverage pre-planned DynamoDB partition schemas for predictable single-digit millisecond latency and lower cost.</p>
-            </div>
-          </div>
-          <div class="rule-box">
-            <span class="rule-num font-mono">05</span>
-            <div class="rule-content">
-              <h4 class="rule-title">Observability First via Traces</h4>
-              <p class="rule-desc">Unique Trace IDs across every hop eliminate cross-team friction and pinpoint third-party bottlenecks instantly.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Scorecard & Q&A Stage Trigger -->
-        <div class="closing-scorecard-row font-mono">
-          <div class="score-pill">
-            <span class="score-lbl">TCO SAVINGS</span>
-            <span class="score-val text-green">-74%</span>
-          </div>
-          <div class="score-pill">
-            <span class="score-lbl">AVAILABILITY</span>
-            <span class="score-val text-green">99.99%</span>
-          </div>
-          <div class="score-pill">
-            <span class="score-lbl">IDLE SERVER FEE</span>
-            <span class="score-val text-orange">USD $0</span>
-          </div>
-          <div class="score-pill">
-            <span class="score-lbl">TIME-TO-MARKET</span>
-            <span class="score-val text-green">6 Months</span>
-          </div>
-        </div>
-
-        <div class="qa-stage-banner font-sans">
-          <span class="qa-badge-live font-mono">OPEN Q&amp;A &amp; DISCUSSION SESSION</span>
-          <span class="qa-presenter">Presented by <strong>Rayina Ilham</strong> &bull; IT Operation Intern at AnterAja</span>
-        </div>
-      </div>
+  const slide = SLIDES.find(item => item.id === 17);
+  return `<section class="slide-closing-wrapper" lang="en" aria-label="Course recap and discussion">
+    <div class="closing-hero-card">
+      <div class="closing-eyebrow font-mono"><span class="badge-tag">${slide.act}</span><span class="badge-accent">AWS Skill Builder recap</span></div>
+      <h1 class="closing-main-title font-serif">${slide.title}</h1>
+      <p class="closing-summary font-sans">${slide.summary}</p>
+      <div class="rules-five-grid font-sans">${slide.points.map((point, i) => `<div class="rule-box">
+        <span class="rule-num font-mono">${String(i + 1).padStart(2, '0')}</span>
+        <div class="rule-content"><h2 class="rule-title">${point.statement}</h2><p class="rule-desc">${point.description}</p></div>
+      </div>`).join('')}</div>
+      <p class="closing-summary font-sans">Try it: a news team needs to process uploaded media. Which service holds waiting jobs? Which service sets the processing steps?</p>
+      <div class="qa-stage-banner font-sans"><span class="qa-badge-live font-mono">Q&amp;A AND DISCUSSION</span>
+        <span class="qa-presenter">Presented by <strong>Rayina Ilham</strong></span></div>
     </div>
-  `;
+  </section>`;
 }
 
 // --------------------------------------------------------------------------
@@ -624,7 +673,8 @@ export function animateSlideDiagram(slideId, options = {}) {
     const onMotionChange = () => { if (reduced.matches) finish(); };
     reduced.addEventListener('change', onMotionChange);
     window.addEventListener('resize', finish);
-    play();
+    if (options.skipAnimation) finish();
+    else play();
     return () => {
       timeline?.kill();
       reduced.removeEventListener('change', onMotionChange);
@@ -632,7 +682,7 @@ export function animateSlideDiagram(slideId, options = {}) {
     };
   }
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (options.skipAnimation || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   // Smooth diagram entrance without mutating SVG element transform coordinates
   gsap.fromTo('.diagram-container', 
