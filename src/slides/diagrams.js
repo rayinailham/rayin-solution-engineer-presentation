@@ -369,17 +369,17 @@ const GRAPHS = {
   14: {
     title: 'Scope access to order records, protect stored data, then review AWS actions and settings',
     height: 800, cloud: [40, 40, 880, 740],
-    headings: [[115, 145, 'PROTECT ORDER DATA'], [115, 475, 'AUDIT ACTIONS + RESOURCE SETTINGS']],
+    headings: [[125, 145, 'PROTECT ORDER DATA'], [125, 435, 'AUDIT ACTIONS + RESOURCE SETTINGS']],
     nodes: [
-      ['iam', 175, 290, 'AWS IAM', 'Least privilege'],
-      ['dynamodb', 475, 290, 'Amazon DynamoDB', 'Order records'],
-      ['kms', 775, 290, 'AWS KMS', 'Manage keys'],
-      ['cloudtrail', 325, 620, 'AWS CloudTrail', 'Record actions'],
-      ['config', 655, 620, 'AWS Config', 'Check settings'],
+      ['iam', 195, 245, 'AWS IAM', 'Least privilege'],
+      ['dynamodb', 480, 245, 'Amazon DynamoDB', 'Order records'],
+      ['kms', 765, 245, 'AWS KMS', 'Manage keys'],
+      ['cloudtrail', 330, 555, 'AWS CloudTrail', 'Record actions'],
+      ['config', 650, 555, 'AWS Config', 'Check settings'],
     ],
     links: [
-      ['M210 290H440', 'Scoped permissions', 325, 268],
-      ['M510 290H740', 'Encryption key', 625, 268],
+      ['M230 245H445', 'Scoped permissions', 337, 223],
+      ['M515 245H730', 'Encryption key', 623, 223],
     ],
   },
   15: {
@@ -453,6 +453,10 @@ function renderGraph(slideId) {
       </defs>
       ${slideId === 2 ? '<text x="210" y="45" class="graph-group-label" fill="#232f3e">Proposed order-processing services</text>' : ''}
       ${renderAwsCloudBoundary(...graph.cloud, 'AWS Cloud', slideId >= 2, slideId === 15)}
+      ${slideId === 14 ? `<g class="security-workflow-surfaces" aria-hidden="true">
+        <rect x="90" y="105" width="780" height="265" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.2" />
+        <rect x="90" y="395" width="780" height="285" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.2" />
+      </g>` : ''}
       ${slideId === 6 ? `<g class="delivery-execution-surface comparison-note" aria-hidden="true">
         <rect x="400" y="365" width="490" height="245" rx="8" fill="#f8fafc" stroke="#d9e1e9" />
       </g>` : ''}
