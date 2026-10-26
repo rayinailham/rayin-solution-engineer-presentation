@@ -105,6 +105,7 @@ class PresentationApp {
       <section class="start-page" lang="en" aria-label="Start presentation">
         <div class="start-brand"><img src="/assets/01-aws-core-logos/aws-logo.svg" alt="Amazon Web Services" width="120" height="72" /></div>
         <button class="start-button" type="button">Start presentation</button>
+        <a class="start-presentation-link" href="https://rayin-solution-engineer-presentation.vercel.app" target="_blank" rel="noopener noreferrer">rayin-solution-engineer-presentation.vercel.app</a>
       </section>`;
     const start = this.stageEl.querySelector('.start-button');
     start.addEventListener('click', () => {
