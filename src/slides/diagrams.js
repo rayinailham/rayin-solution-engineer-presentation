@@ -346,7 +346,7 @@ const GRAPHS = {
   13: {
     title: 'Step Functions sequences the same order tasks and follows configured error paths',
     height: 800, cloud: [40, 40, 880, 740],
-    headings: [[410, 160, 'Same three tasks, in sequence']],
+    headings: [[410, 160, 'Tasks pass results to the next state']],
     nodes: [
       ['stepfunctions', 170, 160, 'AWS Step Functions', 'Controls this plan'],
       ['lambda', 210, 340, 'AWS Lambda', 'Check order', 'check-order'],
@@ -363,23 +363,24 @@ const GRAPHS = {
       ['M780 435V525H490', '', 0, 0, 'failure'],
       ['M815 340H875V610H815', 'After success', 780, 555, 'event'],
     ],
-    annotations: [[410, 195, 'Task results decide the next step.'],
-      [100, 735, 'Retries and recovery are chosen by the team.']],
+    annotations: [[410, 195, 'A Choice state can branch on a task result.'],
+      [100, 735, 'Configure retries, idempotency and recovery.']],
   },
   14: {
-    title: 'Protect order records and keys, then audit actions and check resource settings',
+    title: 'Scope access to order records, protect stored data, then review AWS actions and settings',
     height: 800, cloud: [40, 40, 880, 740],
-    headings: [[100, 110, 'Protect stored records'], [100, 460, 'Review actions and settings']],
+    headings: [[115, 145, 'PROTECT ORDER DATA'], [115, 475, 'AUDIT ACTIONS + RESOURCE SETTINGS']],
     nodes: [
-      ['dynamodb', 250, 200, 'Amazon DynamoDB', 'Order records'],
-      ['kms', 710, 200, 'AWS KMS', 'Manage encryption keys'],
-      ['cloudtrail', 250, 540, 'AWS CloudTrail', 'Who did what, when?'],
-      ['config', 710, 540, 'AWS Config', 'Check chosen rules'],
+      ['iam', 175, 290, 'AWS IAM', 'Least privilege'],
+      ['dynamodb', 475, 290, 'Amazon DynamoDB', 'Order records'],
+      ['kms', 775, 290, 'AWS KMS', 'Manage keys'],
+      ['cloudtrail', 325, 620, 'AWS CloudTrail', 'Record actions'],
+      ['config', 655, 620, 'AWS Config', 'Check settings'],
     ],
-    links: [],
-    annotations: [[100, 355, 'Limit access. Encrypt connections and stored data.'],
-      [100, 390, 'An index supports another lookup, such as status.'],
-      [100, 710, 'Audit coverage and retention need configuration.']],
+    links: [
+      ['M210 290H440', 'Scoped permissions', 325, 268],
+      ['M510 290H740', 'Encryption key', 625, 268],
+    ],
   },
   15: {
     title: 'Record logs, metrics and traces to investigate the same Charge payment task',
@@ -395,36 +396,36 @@ const GRAPHS = {
     links: [
       ['M225 200H495', 'Call task', 360, 180],
       ['M565 200H800', 'Ask payment', 650, 180],
-      ['M530 282V390H260V535', 'Logs + metrics', 355, 370, 'telemetry'],
-      ['M550 282V430H560V535', 'Traces', 610, 480, 'telemetry'],
+      ['M530 282V390H260V535', 'Logs + metrics', 355, 370],
+      ['M550 282V430H560V535', 'Traces', 610, 480],
     ],
     annotations: [[100, 715, 'Include order IDs. Keep sensitive data out of logs.'],
       [100, 745, 'Traces show the calls we record.']],
   },
   16: {
-    title: 'The proposed EV design keeps the same order workflow and adds independent messaging branches',
-    height: 800, cloud: [190, 40, 750, 740],
-    headings: [[225, 110, 'Same order workflow and independent reactions']],
+    title: 'POC design to validate: the order workflow publishes a confirmed event for independent notification, fulfillment, and reporting',
+    height: 800, cloud: [100, 40, 820, 740],
+    headings: [[130, 110, 'ORDER ENTRY + WORKFLOW'], [130, 350, 'CONFIRMED ORDER ROUTING']],
     nodes: [
-      ['mobile', 85, 200, 'Buyer app'],
+      ['mobile', 65, 210, 'Buyer app'],
       ['apigateway', 300, 200, 'Amazon API Gateway', 'Receive orders'],
-      ['stepfunctions', 550, 200, 'AWS Step Functions', 'Same three order tasks'],
-      ['dynamodb', 810, 200, 'Amazon DynamoDB', 'Order records'],
-      ['sns', 300, 450, 'Amazon SNS', 'Order updates'],
-      ['eventbridge', 550, 450, 'Amazon EventBridge', 'OrderConfirmed'],
-      ['sqs', 810, 450, 'Amazon SQS', 'Delivery queue', 'delivery-queue'],
-      ['lambda', 550, 690, 'AWS Lambda', 'Update sales report', 'update-sales-report'],
-      ['lambda', 810, 690, 'AWS Lambda', 'Plan delivery', 'plan-delivery'],
+      ['stepfunctions', 550, 200, 'AWS Step Functions', 'Order workflow'],
+      ['dynamodb', 800, 200, 'Amazon DynamoDB', 'Order records'],
+      ['sns', 300, 440, 'Amazon SNS', 'Customer updates'],
+      ['eventbridge', 550, 440, 'Amazon EventBridge', 'OrderConfirmed'],
+      ['sqs', 800, 440, 'Amazon SQS', 'Fulfillment queue', 'delivery-queue'],
+      ['lambda', 550, 660, 'AWS Lambda', 'Update sales report', 'update-sales-report'],
+      ['lambda', 800, 660, 'AWS Lambda', 'Plan delivery', 'plan-delivery'],
     ],
     links: [
-      ['M120 200H265', 'Order', 230, 180],
-      ['M335 200H515', 'Start steps', 425, 180],
-      ['M585 200H775', 'Read / write', 680, 180],
-      ['M515 215H455V450H335', 'Status update', 350, 350],
-      ['M550 285V415', 'Publish after success', 665, 350],
-      ['M585 450H775', 'Delivery rule', 680, 430, 'event'],
-      ['M810 535V655', 'Read messages', 875, 590, 'event'],
-      ['M550 535V655', 'Report rule', 620, 590, 'event'],
+      ['M90 210H265', 'Order', 185, 190],
+      ['M340 200H515', 'Start workflow', 410, 180],
+      ['M590 200H760', 'Read / write', 675, 180],
+      ['M590 200H650V440H590', 'Publish after success', 760, 350],
+      ['M510 440H340', 'Notification rule', 410, 420, 'event'],
+      ['M590 440H760', 'Fulfillment rule', 730, 420, 'event'],
+      ['M510 440H440V660H510', 'Report rule', 560, 610, 'event'],
+      ['M840 440H875V660H840', 'Lambda polls', 735, 585, 'event'],
     ],
   },
 };
@@ -441,18 +442,17 @@ const EXTRA_ICONS = {
 function renderGraph(slideId) {
   const graph = GRAPHS[slideId];
   const marker = `graph-arrow-${slideId}`;
-  return `<div class="diagram-container service-graph${slideId >= 2 ? ' graph-context' : ''}">
+  return `<div class="diagram-container service-graph${slideId >= 2 ? ' graph-context' : ''}${slideId === 14 ? ' slide-14-graph' : ''}${slideId === 15 ? ' slide-15-graph' : ''}${slideId === 16 ? ' slide-16-graph' : ''}">
     <svg class="aws-stage-svg" viewBox="0 0 960 ${graph.height || 600}" role="img" aria-labelledby="graph-title-${slideId}">
       <title id="graph-title-${slideId}">${graph.title}</title>
       <defs>
-        ${renderOpenArrowMarker(marker)}
-        ${renderOpenArrowMarker(`${marker}-event`)}
-        ${renderOpenArrowMarker(`${marker}-failure`, '#b45309')}
-        ${renderOpenArrowMarker(`${marker}-telemetry`, '#0284c7')}
-        ${renderOpenArrowMarker(`${marker}-feedback`, '#167b55')}
+        ${renderOpenArrowMarker(marker, slideId === 15 ? '#000000' : '#242f3e', slideId === 15 || slideId === 16 ? 4 : 6.5)}
+        ${renderOpenArrowMarker(`${marker}-event`, '#242f3e', slideId === 16 ? 4 : 6.5)}
+        ${renderOpenArrowMarker(`${marker}-failure`, '#b45309', slideId === 16 ? 4 : 6.5)}
+        ${renderOpenArrowMarker(`${marker}-feedback`, '#167b55', slideId === 16 ? 4 : 6.5)}
       </defs>
       ${slideId === 2 ? '<text x="210" y="45" class="graph-group-label" fill="#232f3e">Proposed order-processing services</text>' : ''}
-      ${renderAwsCloudBoundary(...graph.cloud, 'AWS Cloud', slideId >= 2)}
+      ${renderAwsCloudBoundary(...graph.cloud, 'AWS Cloud', slideId >= 2, slideId === 15)}
       ${slideId === 6 ? `<g class="delivery-execution-surface comparison-note" aria-hidden="true">
         <rect x="400" y="365" width="490" height="245" rx="8" fill="#f8fafc" stroke="#d9e1e9" />
       </g>` : ''}
@@ -547,11 +547,12 @@ function renderGraph(slideId) {
         const service = AWS_SERVICES[key];
         const inspectable = Boolean(SLIDE_INSPECTORS[slideId]?.[inspectorKey || key] || INSPECTOR_DATA[key]);
         const enlarged = slideId === 6 && inspectorKey === 'plan-delivery';
+        const architectureIcon = slideId === 16 && AWS_SERVICES[key];
         return `<g class="graph-node${slideId === 6 && key === 'dynamodb' ? ' delivery-lookup' : ''}${inspectable ? ' inspectable-node' : ''}" ${inspectable ? `data-node="${key}" data-node-index="${index}" data-inspector="${inspectorKey || key}" role="button" tabindex="0" aria-label="Inspect ${label}${caption ? `: ${caption}` : ''}"` : ''} transform="translate(${x}, ${y})">
           <rect class="node-rect" x="-82" y="-45" width="164" height="${enlarged ? 145 : caption ? 122 : 100}" rx="8" fill="transparent" stroke="transparent"/>
-          <image href="${service?.icon || EXTRA_ICONS[key]}" x="${enlarged ? -48 : -32}" y="${enlarged ? -48 : -32}" width="${enlarged ? 96 : 64}" height="${enlarged ? 96 : 64}"/>
-          <text y="${enlarged ? 73 : 57}" class="graph-node-label">${label}</text>
-          ${caption ? `<text y="${enlarged ? 93 : 77}" class="graph-node-caption">${caption}</text>` : ''}
+          <image href="${service?.icon || EXTRA_ICONS[key]}" x="${enlarged ? -48 : architectureIcon ? -40 : -32}" y="${enlarged ? -48 : architectureIcon ? -40 : -32}" width="${enlarged ? 96 : architectureIcon ? 80 : 64}" height="${enlarged ? 96 : architectureIcon ? 80 : 64}"/>
+          <text y="${enlarged ? 73 : architectureIcon ? 68 : 57}" class="graph-node-label">${label}</text>
+          ${caption ? `<text y="${slideId === 14 ? 89 : enlarged ? 93 : architectureIcon ? 88 : 77}" class="graph-node-caption">${caption}</text>` : ''}
         </g>`;
       }).join('')}
     </svg>
@@ -561,16 +562,35 @@ function renderGraph(slideId) {
 
 function renderSlide17() {
   const slide = SLIDES.find(item => item.id === 17);
+  const recapServices = [
+    ['/assets/09-general-resources/users.svg'],
+    ['lambda', 'stepfunctions'],
+    ['sqs', 'sns', 'eventbridge'],
+    ['iam', 'kms'],
+    ['cloudwatch', 'xray'],
+  ];
   return `<section class="slide-closing-wrapper" lang="en" aria-label="Course recap and discussion">
     <div class="closing-hero-card">
-      <div class="closing-eyebrow font-mono"><span class="badge-tag">${slide.act}</span><span class="badge-accent">AWS Skill Builder recap</span></div>
-      <h1 class="closing-main-title font-serif">${slide.title}</h1>
-      <p class="closing-summary font-sans">${slide.summary}</p>
-      <div class="rules-five-grid font-sans">${slide.points.map((point, i) => `<div class="rule-box">
-        <span class="rule-num font-mono">${String(i + 1).padStart(2, '0')}</span>
-        <div class="rule-content"><h2 class="rule-title">${point.statement}</h2><p class="rule-desc">${point.description}</p></div>
-      </div>`).join('')}</div>
-      <p class="closing-summary font-sans">Try it: a news team needs to process uploaded media. Which service holds waiting jobs? Which service sets the processing steps?</p>
+      <div class="closing-copy">
+        <div class="closing-eyebrow font-mono"><span class="badge-tag">${slide.act}</span><span class="badge-accent">AWS Skill Builder recap</span></div>
+        <h1 class="closing-main-title font-serif">${slide.title}</h1>
+        <p class="closing-summary font-sans">${slide.summary}</p>
+        <section class="closing-challenge font-sans" aria-label="Design question">
+          <span class="closing-challenge-label font-mono">TRY THE DESIGN</span>
+          <p>A news team processes uploaded media. Which service buffers waiting jobs? Which service coordinates the processing steps?</p>
+        </section>
+      </div>
+      <section class="closing-recap" aria-label="Five design principles">
+        <div class="closing-recap-heading"><h2 class="font-serif">Five design principles</h2><p>Choose by responsibility, then prove the design with tests.</p></div>
+        <div class="rules-five-grid font-sans">${slide.points.map((point, i) => `<article class="rule-box">
+          <span class="rule-num font-mono">${String(i + 1).padStart(2, '0')}</span>
+          <div class="rule-content"><h3 class="rule-title">${point.statement}</h3><p class="rule-desc">${point.description}</p></div>
+          <span class="recap-service-icons" aria-hidden="true">${recapServices[i].map(key => {
+            const src = key.startsWith('/') ? key : AWS_SERVICES[key].icon;
+            return `<img src="${src}" alt="" width="48" height="48" />`;
+          }).join('')}</span>
+        </article>`).join('')}</div>
+      </section>
       <div class="qa-stage-banner font-sans"><span class="qa-badge-live font-mono">Q&amp;A AND DISCUSSION</span>
         <span class="qa-presenter">Presented by <strong>Rayina Ilham</strong></span></div>
     </div>

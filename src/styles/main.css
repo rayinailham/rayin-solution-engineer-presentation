@@ -1026,11 +1026,6 @@ kbd {
   stroke-dasharray: 6 5;
 }
 
-.graph-link.telemetry path {
-  stroke: #0284c7;
-  stroke-dasharray: 6 5;
-}
-
 .graph-link.feedback path {
   stroke: #167b55;
   stroke-dasharray: 6 5;
@@ -1048,9 +1043,14 @@ kbd {
 }
 
 .graph-link.failure .graph-link-label { fill: #b45309; }
-.graph-link.telemetry .graph-link-label { fill: #0284c7; }
 .graph-link.feedback .graph-link-label { fill: #167b55; }
 .graph-group-label { font-size: 13px; font-weight: 600; }
+.slide-15-graph .aws-cloud-boundary > rect { stroke: #232f3e; stroke-width: 2; }
+.slide-15-graph .graph-node-label,
+.slide-15-graph .graph-node-caption,
+.slide-15-graph .graph-link-label,
+.slide-15-graph .graph-group-label { font-family: Arial, sans-serif; font-size: 16px; fill: #111827; }
+.slide-15-graph .graph-link path { stroke: #000; stroke-width: 2pt; }
 .graph-node:focus { outline: none; }
 .graph-node:focus-visible .node-rect { stroke: var(--aws-orange); }
 
@@ -1433,6 +1433,15 @@ kbd {
 .graph-context .graph-node-caption { fill: #232f3e; }
 .graph-context .graph-link path { stroke-width: 1.667; }
 .graph-context .official-cloud > rect { stroke: #232f3e; stroke-width: 1.667; }
+.slide-14-graph.graph-context text { font-family: Arial, sans-serif; font-size: 16pt; fill: #000 !important; }
+.slide-14-graph .graph-link path, .slide-14-graph .official-cloud > rect { stroke-width: 2pt; }
+.slide-14-graph marker polyline { stroke-width: 2pt; }
+.slide-15-graph.graph-context text { font-family: Arial, sans-serif; font-size: 12pt; fill: #000 !important; }
+.slide-15-graph .graph-link path, .slide-15-graph .official-cloud > rect { stroke-width: 2pt; }
+.slide-15-graph marker polyline { stroke-width: 2pt; }
+.slide-16-graph.graph-context text { font-family: Arial, sans-serif; font-size: 12pt; fill: #000 !important; }
+.slide-16-graph .graph-link path, .slide-16-graph .official-cloud > rect { stroke-width: 2pt; }
+.slide-16-graph marker polyline { stroke-width: 2pt; }
 .drawer-body > [hidden] { display: none; }
 .drawer-context-details { display: flex; flex-direction: column; gap: 1.5rem; }
 .drawer-context-details h4 { font-size: 1rem; margin: 0 0 .5rem; color: var(--text-main); }
@@ -1532,11 +1541,56 @@ kbd {
 .slide-closing-wrapper .rule-title { font-size: 1rem; }
 .slide-closing-wrapper .rule-desc { font-size: .95rem; }
 .slide-closing-wrapper .rule-box { transition: none; }
+.slide-closing-wrapper .closing-hero-card {
+  height: 100%;
+  max-height: 100%;
+  padding: clamp(1.25rem, 2.8vw, 3rem);
+  display: grid;
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(1rem, 2.4vw, 2.5rem) clamp(1.5rem, 4vw, 4.5rem);
+  align-items: center;
+  text-align: left;
+}
+.closing-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 1.15rem; min-width: 0; }
+.slide-closing-wrapper .closing-eyebrow { flex-wrap: wrap; margin: 0; }
+.slide-closing-wrapper .closing-main-title { max-width: 12ch; margin: 0; font-size: clamp(2rem, 3.2vw, 3.5rem); line-height: 1.08; }
+.slide-closing-wrapper .closing-summary { max-width: 40ch; margin: 0; font-size: clamp(1rem, 1.15vw, 1.25rem); }
+.closing-challenge { max-width: 42ch; padding: .8rem 0 .8rem 1rem; border-left: 2px solid var(--aws-orange); }
+.closing-challenge-label { color: var(--aws-orange); font-size: .72rem; font-weight: 700; letter-spacing: .08em; }
+.closing-challenge p { margin: .4rem 0 0; color: #475569; font-size: .94rem; line-height: 1.5; }
+.closing-recap { min-width: 0; padding-left: clamp(1rem, 2vw, 2rem); border-left: 1px solid var(--border-subtle); }
+.closing-recap-heading { margin-bottom: .45rem; }
+.closing-recap-heading h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+.closing-recap-heading p { margin: .25rem 0 0; color: var(--text-muted); font-size: .82rem; }
+.slide-closing-wrapper .rules-five-grid { display: flex; flex-direction: column; gap: 0; margin: 0; }
+.slide-closing-wrapper .rule-box {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .7rem;
+  padding: .62rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+}
+.slide-closing-wrapper .rule-box:last-child { border-bottom: 0; }
+.slide-closing-wrapper .rule-title { margin: 0 0 .18rem; font-size: 1rem; line-height: 1.3; }
+.slide-closing-wrapper .rule-desc { font-size: .84rem; line-height: 1.4; }
+.recap-service-icons { display: flex; align-items: center; justify-content: flex-end; gap: .2rem; }
+.recap-service-icons img { display: block; width: clamp(32px, 2.5vw, 44px); height: clamp(32px, 2.5vw, 44px); object-fit: contain; }
+.slide-closing-wrapper .qa-stage-banner { grid-column: 1 / -1; align-self: end; padding-top: .85rem; }
+@media (max-width: 1000px) {
+  .slide-closing-wrapper { overflow-y: auto; align-items: flex-start; }
+  .slide-closing-wrapper .closing-hero-card { height: auto; max-height: none; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
+  .closing-recap { padding: 1rem 0 0; border-top: 1px solid var(--border-subtle); border-left: 0; }
+  .slide-closing-wrapper .qa-stage-banner { grid-column: 1; }
+}
 @media (max-height: 850px) {
   .slide-closing-wrapper .closing-main-title { font-size: 1.8rem; }
-  .slide-closing-wrapper .closing-summary { margin-bottom: 1rem; }
-  .slide-closing-wrapper .rules-five-grid { margin-bottom: 1rem; gap: .7rem; }
-  .slide-closing-wrapper .rule-box { padding: .75rem; }
+  .closing-copy { gap: .8rem; }
+  .slide-closing-wrapper .rule-box { padding: .45rem 0; }
 }
 
 /* Give the Lambda walkthrough more room without changing other slides. */

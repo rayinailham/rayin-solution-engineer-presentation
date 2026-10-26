@@ -3,7 +3,7 @@ import { SLIDES } from './data/slides.js';
 import { INSPECTOR_DATA, SLIDE_INSPECTORS } from './data/inspectors.js';
 import { renderSlideDiagram, animateSlideDiagram } from './slides/diagrams.js';
 
-// Shared header choreography for 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12. Keep the frame visible;
+// Shared header choreography for 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13. Keep the frame visible;
 // roll changing text and carry pill positions using compositor transforms.
 function createEditorialHeaderMotion(root, slide) {
   const top = root.querySelector('.editorial-top-section');
@@ -296,7 +296,7 @@ class PresentationApp {
 
     const storyTransition = animate && this.currentIndex === 1 && index === 2 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const eventTransition = animate && this.currentIndex === 2 && index === 3 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const taskTransition = animate && ((this.currentIndex === 4 && index === 5) || (this.currentIndex === 5 && index === 6) || (this.currentIndex === 6 && index === 7) || (this.currentIndex === 7 && index === 8) || (this.currentIndex === 8 && index === 9) || (this.currentIndex === 9 && index === 10) || (this.currentIndex === 10 && index === 11)) && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const taskTransition = animate && ((this.currentIndex === 4 && index === 5) || (this.currentIndex === 5 && index === 6) || (this.currentIndex === 6 && index === 7) || (this.currentIndex === 7 && index === 8) || (this.currentIndex === 8 && index === 9) || (this.currentIndex === 9 && index === 10) || (this.currentIndex === 10 && index === 11) || (this.currentIndex === 11 && index === 12) || (this.currentIndex === 12 && index === 13) || (this.currentIndex === 13 && index === 14) || (this.currentIndex === 14 && index === 15)) && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const routingTransition = animate && this.currentIndex === 3 && index === 4 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const logoFirst = animate && this.currentIndex === 0 && index === 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (logoFirst) {
@@ -396,17 +396,17 @@ class PresentationApp {
         <div class="col-editorial">
           <div class="editorial-top-section">
             <div class="editorial-header">
-              <span class="section-indicator font-mono">— ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? `SECTION <span class="section-step"><span>${String(slide.id).padStart(2, '0')}</span></span>` : slide.section}</span>
-              <span class="act-badge font-mono">${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? `<span>${slide.act.split(':')[0]}:</span><span class="story-word-mask"><span class="story-act-label">${slide.act.replace(/^PART I{1,3}: /, '')}</span></span>` : slide.act}</span>
+              <span class="section-indicator font-mono">— ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(slide.id) ? `SECTION <span class="section-step"><span>${String(slide.id).padStart(2, '0')}</span></span>` : slide.section}</span>
+              <span class="act-badge font-mono">${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(slide.id) ? `<span>${slide.act.split(':')[0]}:</span><span class="story-word-mask"><span class="story-act-label">${slide.act.replace(/^PART (?:I{1,3}|IV): /, '')}</span></span>` : slide.act}</span>
             </div>
-            ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? '<div class="headline-reveal-mask">' : ''}<h2 class="slide-headline font-serif">${slide.title}</h2>${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? '</div>' : ''}
+            ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(slide.id) ? '<div class="headline-reveal-mask">' : ''}<h2 class="slide-headline font-serif">${slide.title}</h2>${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(slide.id) ? '</div>' : ''}
             
             <div class="pills-row">
               ${(slide.pills || []).map(pill => `<span class="service-pill">${pill}</span>`).join('')}
             </div>
           </div>
           <div class="editorial-body-section">
-            ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(slide.id) ? `<div class="slide-narrative">${slide.summary.split('\n').map(text => `<p>${text}</p>`).join('')}</div>` : `<p class="slide-narrative">${slide.summary}</p>`}
+            ${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(slide.id) ? `<div class="slide-narrative">${slide.summary.split('\n').map(text => `<p>${text}</p>`).join('')}</div>` : `<p class="slide-narrative">${slide.summary}</p>`}
             <div class="bullet-points-container">
               ${(slide.points || []).map(pt => {
                 if (typeof pt === 'object' && pt !== null && pt.statement) {
@@ -773,6 +773,10 @@ class PresentationApp {
     const notifications = slide.id === 10;
     const access = slide.id === 11;
     const taskAccess = slide.id === 12;
+    const workflow = slide.id === 13;
+    const dataReview = slide.id === 14;
+    const observability = slide.id === 15;
+    const recap = slide.id === 16;
     const root = this.stageEl;
     this.slideCleanup?.();
     const headerMotion = createEditorialHeaderMotion(root, slide);
@@ -791,7 +795,7 @@ class PresentationApp {
     divider.setAttribute('y2', oldColumn.bottom);
     overlay.append(divider);
     root.classList.add('is-moving-divider');
-    const selectors = access ? ['.aws-cloud-boundary', '[data-node="stepfunctions"]', '[data-node="mobile"]'] : queue ? ['.aws-cloud-boundary', '[data-node="lambda"]'] : (compute || notifications || taskAccess) ? ['.aws-cloud-boundary'] : api ? ['.aws-cloud-boundary', '[data-inspector="dynamodb"]'] : ['.aws-cloud-boundary', '[data-inspector="eventbridge"]',
+    const selectors = recap ? ['.aws-cloud-boundary', '[data-inspector="stepfunctions"]'] : (dataReview || observability) ? ['.aws-cloud-boundary'] : access ? ['.aws-cloud-boundary', '[data-node="stepfunctions"]', '[data-node="mobile"]'] : queue ? ['.aws-cloud-boundary', '[data-node="lambda"]'] : workflow ? ['.aws-cloud-boundary', '[data-node="eventbridge"]'] : (compute || notifications || taskAccess) ? ['.aws-cloud-boundary'] : api ? ['.aws-cloud-boundary', '[data-inspector="dynamodb"]'] : ['.aws-cloud-boundary', '[data-inspector="eventbridge"]',
       '[data-inspector="order-event"]', '[data-inspector="plan-delivery"]'];
     const carried = selectors.map(selector => {
       const element = root.querySelector(selector);
@@ -823,7 +827,7 @@ class PresentationApp {
         destination.replaceWith(element);
       });
       gsap.set(root.querySelectorAll('.slide-narrative, .point-row, .graph-context-note, .editorial-footer, .graph-link, .comparison-note, .graph-group-label, .delivery-output, .delivery-lookup'), { clearProps: 'all' });
-      if (api || compute || queue || notifications || access || taskAccess) gsap.set(root.querySelectorAll('.graph-node'), { clearProps: 'opacity' });
+      if (api || compute || queue || notifications || access || taskAccess || workflow || dataReview || observability || recap) gsap.set(root.querySelectorAll('.graph-node'), { clearProps: 'opacity' });
       if (taskAccess) gsap.set(root.querySelectorAll('.permission-panel, .permission-panel text, [data-node="iam"] > image, [data-node="iam"] > text, .graph-context-note > *, .editorial-footer > span'), { clearProps: 'all' });
       overlay.remove();
       root.classList.remove('is-moving-divider');
@@ -850,6 +854,8 @@ class PresentationApp {
         gsap.set(select('.graph-link, .comparison-note, .graph-group-label, .delivery-output, .delivery-lookup, .graph-context-note, .editorial-footer'), { opacity: 0 });
         reveal = gsap.timeline({ onComplete: finish });
         headerMotion.reveal(reveal);
+        if (dataReview || observability) gsap.set(select('.graph-node'), { opacity: 0 });
+        if (recap) gsap.set(select('.graph-node:not([data-inspector="stepfunctions"])'), { opacity: 0 });
         const column = root.querySelector('.col-editorial').getBoundingClientRect();
         // Carry the border with the diagram; keep the destination layout stable.
         reveal.to(divider, { attr: { x1: column.right - .5, x2: column.right - .5,
@@ -921,6 +927,46 @@ class PresentationApp {
             .to(select('.graph-group-label'), { opacity: 1, duration: .35, stagger: .06 }, .45)
             .to(select('.graph-link'), { opacity: 1, duration: .35, stagger: .08 }, .75)
             .to(select('.comparison-note, .graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1);
+          return;
+        }
+        if (workflow) {
+          gsap.set(select('.graph-node'), { opacity: 0 });
+          reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .1 }, .3)
+            .to(select('.graph-node'), { opacity: 1, duration: .45, stagger: .1, ease: 'power3.out' }, .4)
+            .to(select('.graph-link'), { opacity: 1, duration: .35, stagger: .08 }, .7)
+            .to(select('.graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1);
+          return;
+        }
+        if (recap) {
+          const labels = carried[1].element.querySelectorAll('text');
+          const nextLabels = destinations[1].querySelectorAll('text');
+          reveal.to(labels, { opacity: 0, duration: .16 }, .15)
+            .add(() => labels.forEach((label, i) => { if (nextLabels[i]) label.textContent = nextLabels[i].textContent; }), .32)
+            .to(labels, { opacity: 1, duration: .24 }, .42)
+            .to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .1 }, .3)
+            .to(select('.graph-node:not([data-inspector="stepfunctions"])'), { opacity: 1, duration: .4, stagger: .055, ease: 'power3.out' }, .35)
+            .to(select('.graph-group-label'), { opacity: 1, duration: .35, stagger: .06 }, .48)
+            .to(select('.graph-link'), { opacity: 1, duration: .35, stagger: .06 }, .72)
+            .to(select('.graph-context-note, .editorial-footer'), { opacity: 1, duration: .35 }, 1.05);
+          return;
+        }
+        if (dataReview) {
+          reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4 }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .12 }, .3)
+            .to(select('.graph-node'), { opacity: 1, duration: .45, stagger: .09, ease: 'power3.out' }, .4)
+            .to(select('.graph-link'), { opacity: 1, duration: .35, stagger: .12 }, .72)
+            .to(select('.comparison-note, .graph-group-label, .graph-context-note, .editorial-footer'), { opacity: 1, duration: .35, stagger: .05 }, .9);
+          return;
+        }
+        if (observability) {
+          reveal.to(select('.slide-narrative'), { opacity: 1, y: 0, duration: .4, ease: 'power3.out' }, .15)
+            .to(select('.point-row'), { opacity: 1, y: 0, duration: .4, stagger: .1, ease: 'power3.out' }, .28)
+            .to(select('.graph-node'), { opacity: 1, duration: .38, stagger: .07, ease: 'power3.out' }, .28)
+            .to(select('.graph-link'), { opacity: 1, duration: .3, stagger: .08, ease: 'power3.out' }, .58)
+            .to(select('.graph-group-label'), { opacity: 1, duration: .3, ease: 'power3.out' }, .62)
+            .to(select('.graph-context-note, .editorial-footer'), { opacity: 1, duration: .35, ease: 'power3.out' }, .82);
           return;
         }
         if (queue) {

@@ -443,15 +443,15 @@ export const SLIDES = [
       "lambda",
       "eventbridge"
     ],
-    "summary": "Now expand the order workflow from slides 3–5. Step Functions follows a plan of steps and decisions. This plan is called a state machine.",
+    "summary": "Now expand the order workflow from slides 3–5. Step Functions runs a state machine: a plan of tasks and decisions that passes results between steps.",
     "points": [
       {
-        "statement": "1. Pass results to the next step",
-        "description": "Check order, then Reserve stock, then Charge payment. Step Functions tracks the current step and its data."
+        "statement": "1. Pass results and choose the next step",
+        "description": "Check order, reserve stock, then charge payment. A Choice state can branch on a result; Step Functions tracks the workflow data."
       },
       {
         "statement": "2. Define what to do after failure",
-        "description": "Retry selected errors or take another path. Repeating a payment must not charge the buyer twice."
+        "description": "Retry selected errors or catch them for a recovery path. Make payment handling idempotent so a retry cannot charge twice."
       },
       {
         "statement": "3. Publish only after success",
@@ -459,7 +459,7 @@ export const SLIDES = [
       }
     ],
     "graphContextTitle": "Sequence belongs to the workflow",
-    "graphContext": "Solid = workflow sequence. Orange = configured error paths. Dark dashed = event delivery after success. Some error paths, data access and notification steps are hidden.",
+    "graphContext": "Solid = workflow sequence. Orange = configured error paths; a Choice state can branch on task results. Dark dashed = event delivery after success. Retries, payment idempotency and recovery tasks need configuration.",
     "metadata": "Course: Step Functions • Error handling and recovery must be configured"
   },
   {
@@ -475,6 +475,7 @@ export const SLIDES = [
     ],
     "services": [
       "dynamodb",
+      "iam",
       "kms",
       "cloudtrail",
       "config"
@@ -482,21 +483,21 @@ export const SLIDES = [
     "summary": "The workflow needs saved order records. Data protection and a record of changes matter as much as the task code.",
     "points": [
       {
-        "statement": "1. Store data for the questions we ask",
-        "description": "DynamoDB keeps order details. An extra index gives another way to find orders, such as by status."
+        "statement": "1. Limit access to the order records",
+        "description": "Give each task role only the actions and table it needs. Check that a signed-in buyer owns the order they request."
       },
       {
-        "statement": "2. Protect data and its keys",
-        "description": "Use encrypted connections and storage. Encryption makes data unreadable without the right key. Access rules still matter."
+        "statement": "2. Encrypt data in transit and at rest",
+        "description": "DynamoDB encrypts stored records. Use encrypted connections, keep backups and test restores. KMS key permissions still matter."
       },
       {
-        "statement": "3. Review actions and settings",
-        "description": "CloudTrail records AWS API activity. AWS Config checks recorded resource settings against chosen rules."
+        "statement": "3. Audit actions and check resource settings",
+        "description": "CloudTrail records covered AWS API activity. Config evaluates recorded settings against chosen rules; collection and retention need setup."
       }
     ],
     "graphContextTitle": "Data controls, not more order steps",
-    "graphContext": "These panels show separate controls. DynamoDB encrypts stored data. AWS KMS manages keys. Audit collection, retention and Config rules need setup.",
-    "metadata": "Course: data stores and auditing • No single-table design or latency guarantee required"
+    "graphContext": "CloudTrail records AWS actions. Config evaluates resource settings. Neither decides whether a buyer owns an order.",
+    "metadata": "Data stores + auditing • Scope access; configure key and audit settings"
   },
   {
     "id": 15,
@@ -514,23 +515,23 @@ export const SLIDES = [
       "cloudwatch",
       "xray"
     ],
-    "summary": "When an order is slow, which task needs attention? Observability means using recorded evidence to understand what the app is doing.",
+    "summary": "When an order is slow, which task needs attention? Observability uses recorded evidence to understand what the app is doing.",
     "points": [
       {
         "statement": "1. Logs: what happened?",
-        "description": "Record task results and order IDs. CloudWatch Logs lets the team search those records."
+        "description": "Record task results and order IDs. CloudWatch Logs lets the team search those records. Keep passwords and payment details out."
       },
       {
         "statement": "2. Metrics: how often or how long?",
-        "description": "CloudWatch tracks numbers such as errors, queue age and completed orders. Set alarms for problems."
+        "description": "CloudWatch tracks errors, queue age and completed orders. Set thresholds and alarms for problems."
       },
       {
         "statement": "3. Traces: where was time spent?",
-        "description": "X-Ray joins recorded parts of a request. Trace details can show a slow call to a payment partner."
+        "description": "X-Ray connects instrumented parts of a request. Trace details can show a slow payment-partner call."
       }
     ],
     "graphContextTitle": "Evidence sits beside the order flow",
-    "graphContext": "Blue lines carry monitoring data, not orders. Enable logging and tracing. Carry order IDs across messages. Do not log passwords or full payment data.",
+    "graphContext": "Blue dashed lines carry telemetry, not orders. Logging, metrics and tracing need configuration and instrumentation; sampling can leave gaps. Carry order IDs across messages. Evidence helps investigation, but does not guarantee a diagnosis.",
     "metadata": "Course: CloudWatch and X-Ray • Evidence helps investigation; it is not an instant diagnosis"
   },
   {
@@ -557,19 +558,19 @@ export const SLIDES = [
     "points": [
       {
         "statement": "1. Test the buyer journey",
-        "description": "Test configuration, finance, orders and status. Check that each buyer can access only their own orders."
+        "description": "Test vehicle configuration, financing, orders and status tracking. Verify each buyer can access only their own orders."
       },
       {
         "statement": "2. Test busy and failed conditions",
-        "description": "Simulate a launch spike, repeated messages and a failed payment. Check recovery and waiting work."
+        "description": "Simulate launch traffic, repeated events and payment failures. Check retries, recovery and queue age."
       },
       {
         "statement": "3. Measure before making claims",
-        "description": "Measure configuration against the under-one-second goal. Track completed orders, errors, alerts and cost."
+        "description": "Measure configuration against the sub-second goal. Track order completion, errors and cost per order."
       }
     ],
     "graphContextTitle": "A proposed design, not a production result",
-    "graphContext": "Solid = service calls. Dashed = events and messages. The same tasks sit inside the workflow. This is the order view; configuration, finance and status routes are hidden, along with security and monitoring.",
+    "graphContext": "Solid = workflow calls. Dashed = event or message delivery. EventBridge routes confirmed orders to SNS, SQS and reporting. Lambda polls SQS. Configuration, financing, status APIs, security and monitoring are outside this focused view.",
     "metadata": "Course: delivering the POC • Test results and production savings are not yet shown"
   },
   {
@@ -584,27 +585,27 @@ export const SLIDES = [
       "Q&A"
     ],
     "services": [],
-    "summary": "Start with the business need. Choose services for each job. Then test how they work together.",
+    "summary": "Start from the buyer’s outcome. Match each AWS service to its job, then test the design before launch.",
     "points": [
       {
         "statement": "Start with the need",
-        "description": "What must the buyer do? What must the small team operate?"
+        "description": "Define the buyer outcome, team constraints and measurable goal."
       },
       {
-        "statement": "Separate tasks and share updates",
-        "description": "Lambda runs code. Step Functions sets steps. Events share what happened."
+        "statement": "Separate tasks; coordinate the workflow",
+        "description": "Lambda runs code. Step Functions coordinates workflow steps."
       },
       {
         "statement": "Use the right message tool",
-        "description": "SQS holds work. SNS shares notifications. EventBridge chooses event targets."
+        "description": "SQS buffers work. SNS fans out notifications. EventBridge routes events. Combine them when the flow needs it."
       },
       {
-        "statement": "Protect each path and record",
-        "description": "Check identity and permissions. Limit task access. Encrypt sensitive data."
+        "statement": "Protect every path and record",
+        "description": "Verify data ownership. Grant least privilege. Encrypt sensitive data."
       },
       {
         "statement": "Collect evidence and test",
-        "description": "Use logs, metrics and traces. Test errors and repeated messages before launch."
+        "description": "Test failures, retries and duplicates. Measure latency, success and cost before launch."
       }
     ],
     "metadata": "Discussion: Which service holds work? Which service decides the order of steps?"
